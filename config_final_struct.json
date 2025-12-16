@@ -1,0 +1,92 @@
+{
+  "as": [
+    {
+      "id": 1,
+      "protocole_interne": {
+        "type": "RIP",
+        "version": 2
+      }
+    },
+    {
+      "id": 2,
+      "protocole_interne": {
+        "type": "OSPF",
+        "process_id": 1,
+        "area": 0
+      }
+    }
+  ],
+
+  "routeurs": [
+    { "nom": "R1", "as": 1 },
+    { "nom": "R2", "as": 1 },
+    { "nom": "R3", "as": 1 },
+    { "nom": "R4", "as": 1 },
+
+    { "nom": "R5", "as": 2 },
+    { "nom": "R6", "as": 2 },
+    { "nom": "R7", "as": 2 },
+    { "nom": "R8", "as": 2 }
+  ],
+
+  "liens": [
+    {
+      "from": "R1",
+      "to": "R2",
+      "interface_from": "Gig0/0",
+      "interface_to": "Gig0/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R2",
+      "to": "R3",
+      "interface_from": "Gig0/1",
+      "interface_to": "Gig0/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R3",
+      "to": "R4",
+      "interface_from": "Gig0/1",
+      "interface_to": "Gig0/0",
+      "type": "intra-as"
+    },
+
+    {
+      "from": "R5",
+      "to": "R6",
+      "interface_from": "Gig0/0",
+      "interface_to": "Gig0/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R6",
+      "to": "R7",
+      "interface_from": "Gig0/1",
+      "interface_to": "Gig0/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R7",
+      "to": "R8",
+      "interface_from": "Gig0/1",
+      "interface_to": "Gig0/0",
+      "type": "intra-as"
+    },
+
+    {
+      "from": "R1",
+      "to": "R5",
+      "interface_from": "Gig0/1",
+      "interface_to": "Gig0/1",
+      "type": "inter-as"
+    },
+    {
+      "from": "R2",
+      "to": "R6",
+      "interface_from": "Gig0/2",
+      "interface_to": "Gig0/2",
+      "type": "inter-as"
+    }
+  ]
+}
