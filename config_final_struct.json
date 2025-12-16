@@ -3,16 +3,14 @@
     {
       "id": 1,
       "protocole_interne": {
-        "type": "RIP",
-        "version": 2
+        "type": "RIP"
       }
     },
     {
       "id": 2,
       "protocole_interne": {
         "type": "OSPF",
-        "process_id": 1,
-        "area": 0
+        "process_id": 1
       }
     }
   ],
