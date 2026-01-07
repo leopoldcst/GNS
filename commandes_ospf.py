@@ -14,11 +14,6 @@ def ospf_commandes(addresse_ipv6,interface,nom_routeur,nom_routeur2):
         data = json.load(f)
 
     ROUTEUR_CIBLE = nom_routeur2   # <- change ici si besoin avec une fonction qui creer les liens demandés
-    #exemple :
-    #for r in data["liens"]:
-    #    if r["from"] == nom_routeur:
-    #        ROUTEUR_CIBLE = r["to"]
-    #        break
 
     
     commandes = []
@@ -65,13 +60,6 @@ def rip_commandes(addresse_ipv6,interface, nom_routeur,nom_routeur2):
 
   
     ROUTEUR_CIBLE = nom_routeur2   # <- change ici si besoin avec une fonction qui creer les liens demandés
-    #exemple :
-    #for r in data["liens"]:
-    #    if r["from"] == nom_routeur:
-    #        ROUTEUR_CIBLE = r["to"]
-    #        break
-
-
 
     commandes = []
     process_name = "RIP_AS"
@@ -110,4 +98,3 @@ print()
 rip_commandes("1000:0:0:2::2/64","g2/0","R2","R3")
 print()
 rip_commandes("1000:0:0:2::3/64","g2/0","R3","R2")
-#rip_commandes("1000:0:0:2::1/64","g2/0","R3")
