@@ -91,6 +91,9 @@ def rip_commandes(addresse_ipv6,interface, nom_routeur,nom_routeur2):
     for cmd in commandes:
         print(cmd)
 
+
+
+
 rip_commandes("1000:0:0:1::1/64","g1/0","R1","R2")
 print()
 rip_commandes("1000:0:0:1::2/64","g1/0","R2","R1")

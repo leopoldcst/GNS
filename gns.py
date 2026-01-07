@@ -1,6 +1,9 @@
 ### Implémenter le démarrage du routeur
 
 
+#Ajouter : link_style: Optional[Any] = None dans la library gns3fy
+
+
 from gns3fy import gns3fy, Project, Node, Link
 import telnetlib3.telnetlib as telnetlib
 
@@ -16,8 +19,12 @@ class GnsProject:
         self.lab = gns3fy.Project(name=self.name, connector=self.server)
 
 
-    def createNew(self):
-        # self.server.create_project(name=self.name)
+    def createNew(self, autoRecover=False):
+        if autoRecover:
+            if self.server.get_project(self.name) is not None:
+                self.recoverExisting()
+
+                return
         self.lab.create()
 
 
@@ -25,7 +32,7 @@ class GnsProject:
         self.lab.get()
         
 
-    def initiate(self):
+    def open(self):
         self.lab.open()
 
 
@@ -33,7 +40,14 @@ class GnsProject:
         self.lab.close()
 
 
-    def createRouter(self, name="Router", model="c7200"):
+    def createRouter(self, name="Router", model="c7200", autoRecover=False):
+        if autoRecover:
+            for node in self.lab.nodes:
+                if node.name == name:
+                    self.recoverRouter(name, model)
+
+                    return
+        
         router = Node(
             project_id=self.lab.project_id,
             connector=self.server,

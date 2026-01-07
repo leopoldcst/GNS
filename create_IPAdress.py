@@ -1,6 +1,3 @@
-import json
-
-
 def ipv6_link_intra_as(router_a, router_b, num_as):
     id_a = int(''.join(filter(str.isdigit, router_a)))
     id_b = int(''.join(filter(str.isdigit, router_b)))
@@ -30,10 +27,6 @@ def ipv6_loopback(nom_routeur, num_as):
 
 ##addresses = ipv6_link_inter_as("R1",1,"R2",2)
 ##print(addresses)
-
-with open("config_final_struct.json") as f:
-    data = json.load(f)
-
 
 # R1 = data["liens"][0]["from"]
 # R2 = data["liens"][0]["to"]

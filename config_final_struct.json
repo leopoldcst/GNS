@@ -1,4 +1,5 @@
 {
+  "project_name": "Test",
   "as": [
     {
       "id": 1,
@@ -15,19 +16,19 @@
     }
   ],
 
-  "routeurs": [
-    { "nom": "R1", "as": 1 },
-    { "nom": "R2", "as": 1 },
-    { "nom": "R3", "as": 1 },
-    { "nom": "R4", "as": 1 },
+  "routers": [
+    { "name": "R1", "as": 1 },
+    { "name": "R2", "as": 1 },
+    { "name": "R3", "as": 1 },
+    { "name": "R4", "as": 1 },
 
-    { "nom": "R5", "as": 2 },
-    { "nom": "R6", "as": 2 },
-    { "nom": "R7", "as": 2 },
-    { "nom": "R8", "as": 2 }
+    { "name": "R5", "as": 2 },
+    { "name": "R6", "as": 2 },
+    { "name": "R7", "as": 2 },
+    { "name": "R8", "as": 2 }
   ],
 
-  "liens": [
+  "links": [
     {
       "from": "R1",
       "to": "R2",
