@@ -4,6 +4,8 @@
 from gns3fy import gns3fy, Project, Node, Link
 import telnetlib3.telnetlib as telnetlib
 
+import datetime
+
 
 class GnsProject:
     def __init__(self, ip="http://localhost", port=3080, name="Test project") -> None:
@@ -106,21 +108,15 @@ class RouterSocket:
 
 
 if __name__ == "__main__":
-    ## g = GnsProject(name="Test")
+    g = GnsProject(name=round(datetime.datetime.now().timestamp()))
+    # g.recoverExisting()
     
-    
-    # g.createNew()
-    # g.createRouter()
-
-    ## g.recoverExisting()
-    # g.createRouter(name="R2")
-    #
-
-    # g.createRouter(name="R1")
-    # g.createRouter(name="R3")
-    # g.createRouter(name="R2")
-    # g.createLink("R1", "g1/0", "R2", "g2/0")
-    # g.createLink("R2", "g1/0", "R3", "g2/0")
+    g.createNew()
+    g.createRouter(name="R1")
+    g.createRouter(name="R3")
+    g.createRouter(name="R2")
+    g.createLink("R1", "g1/0", "R2", "g2/0")
+    g.createLink("R2", "g1/0", "R3", "g2/0")
 
     ## g.recoverRouter(name="R1")
 
@@ -128,14 +124,15 @@ if __name__ == "__main__":
 
     # g.close()
 
-    g = GnsProject(name="Test")
-    g.recoverExisting()
-    g.recoverRouter(name="R3")
-    port = g.getRouterPort("R3")
+    # g = GnsProject(name="Test")
+    # g.createNew()
+    # g.recoverExisting()
+    # g.recoverRouter(name="R3")
+    # port = g.getRouterPort("R3")
 
-    routerS = RouterSocket(port=port)
-    routerS.run("configure terminal")
-    routerS.run("interface g1/0")
-    routerS.run("ipv6 enable")
+    # routerS = RouterSocket(port=port)
+    # routerS.run("configure terminal")
+    # routerS.run("interface g1/0")
+    # routerS.run("ipv6 enable")
     # routerS.close()
 
