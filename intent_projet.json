@@ -1,39 +1,33 @@
 {
+  "project_name": "Test",
   "as": [
     {
-      "id": 1,
-      "protocole_interne": {
-        "type": "RIP"
-      }
+      "nb": "1",
+      "internal_protocl": "RIP"
     },
     {
-      "id": 2,
-      "protocole_interne": {
-        "type": "OSPF",
-        "process_id": 1
-      }
+      "nb": "2",
+      "internal_protocl": "RIP"
     }
   ],
+  "routers": [
+    { "name": "R1", "as": 1 },
+    { "name": "R2", "as": 1 },
+    { "name": "R3", "as": 1 },
+    { "name": "R4", "as": 1 },
+    { "name": "R5", "as": 1 },
+    { "name": "R6", "as": 1 },
+    { "name": "R7", "as": 1 },
 
-  "routeurs": [
-    { "nom": "R1", "as": 1 },
-    { "nom": "R2", "as": 1 },
-    { "nom": "R3", "as": 1 },
-    { "nom": "R4", "as": 1 },
-    { "nom": "R5", "as": 1 },
-    { "nom": "R6", "as": 1 },
-    { "nom": "R7", "as": 1 },
-
-    { "nom": "R8", "as": 2 },
-    { "nom": "R9", "as": 2 },
-    { "nom": "R10", "as": 2 },
-    { "nom": "R11", "as": 2 },
-    { "nom": "R12", "as": 2 },
-    { "nom": "R13", "as": 2 },
-    { "nom": "R14", "as": 2 }
+    { "name": "R8", "as": 2 },
+    { "name": "R9", "as": 2 },
+    { "name": "R10", "as": 2 },
+    { "name": "R11", "as": 2 },
+    { "name": "R12", "as": 2 },
+    { "name": "R13", "as": 2 },
+    { "name": "R14", "as": 2 }
   ],
-
-  "liens": [
+  "links": [
     {
       "from": "R1",
       "to": "R2",
@@ -86,7 +80,7 @@
     {
       "from": "R4",
       "to": "R7",
-      "interface_from": "g7/0",
+      "interface_from": "g4/0",
       "interface_to": "g1/0",
       "type": "intra-as"
     },
@@ -100,14 +94,10 @@
     {
       "from": "R5",
       "to": "R7",
-      "interface_from": "g7/0",
+      "interface_from": "g4/0",
       "interface_to": "g2/0",
       "type": "intra-as"
     },
-
-
-
-
     {
       "from": "R6",
       "to": "R8",
@@ -122,10 +112,6 @@
       "interface_to": "g3/0",
       "type": "inter-as"
     },
-
-
-
-
     {
       "from": "R14",
       "to": "R12",
@@ -178,7 +164,7 @@
     {
       "from": "R10",
       "to": "R9",
-      "interface_from": "g7/0",
+      "interface_from": "g4/0",
       "interface_to": "g1/0",
       "type": "intra-as"
     },
@@ -192,7 +178,7 @@
     {
       "from": "R11",
       "to": "R9",
-      "interface_from": "g7/0",
+      "interface_from": "g4/0",
       "interface_to": "g2/0",
       "type": "intra-as"
     }
