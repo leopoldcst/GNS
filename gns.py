@@ -104,20 +104,42 @@ class GnsProject:
     def getRouterPort(self, router_name):
         return self.routers[router_name].console
 
+    def run_on_router(self, name, commands):
+        routerSocket = RouterSocket(name, port=self.get_router_port(name))
+
+        for cmd in commands:
+            routerSocket.run(cmd)
+
+        routerSocket.close()
+        # await telnet_client("localhost", self.get_router_port(name), commands)
+
 
 
 class RouterSocket:
-    def __init__(self, host="localhost", port=0) -> None:
+    def __init__(self, name, host="localhost", port=0) -> None:
+        self.name = name
         self.tn = telnetlib.Telnet(host, port)
-        self.run("\r")
+        
+        self.tn.write(b"\r")
+        self.tn.write(b"\r")
+        self.tn.write(b"\r")
+        self.emptyChannel()
         
 
     def run(self, command):
+        # print(f"-> {command}")
         self.tn.write(command.encode("ascii")+b"\r")
+        time.sleep(0.005)
+        self.emptyChannel()
 
 
     def close(self):
         self.tn.close()
+
+    def emptyChannel(self):
+        while self.tn.read_very_eager() != b"":
+            # self.tn.write(b"\r")
+            pass
         
 
 
