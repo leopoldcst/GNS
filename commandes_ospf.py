@@ -8,12 +8,12 @@ import json
 
 FICHIER_JSON = "config_final_struct.json"
 
-def ospf_commandes(addresse_ipv6,interface,nom_routeur):
+def ospf_commandes(addresse_ipv6,interface,nom_routeur,nom_routeur2):
     # Charger le JSON
     with open(FICHIER_JSON, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    ROUTEUR_CIBLE = "R3"   # <- change ici si besoin avec une fonction qui creer les liens demandés
+    ROUTEUR_CIBLE = nom_routeur2   # <- change ici si besoin avec une fonction qui creer les liens demandés
     #exemple :
     #for r in data["liens"]:
     #    if r["from"] == nom_routeur:
@@ -54,18 +54,17 @@ def ospf_commandes(addresse_ipv6,interface,nom_routeur):
     for cmd in commandes:
         print(cmd)
 
-       '''
-       fin programme OSPF
-       début programme RIP 
-       ''' 
+       
+    #    fin programme OSPF
+    #    début programme RIP 
         
-def rip_commandes(addresse_ipv6,interface, nom_routeur):
+def rip_commandes(addresse_ipv6,interface, nom_routeur,nom_routeur2):
     # Charger le JSON
     with open(FICHIER_JSON, "r", encoding="utf-8") as f:
         data = json.load(f)
 
   
-    ROUTEUR_CIBLE = "R3"   # <- change ici si besoin avec une fonction qui creer les liens demandés
+    ROUTEUR_CIBLE = nom_routeur2   # <- change ici si besoin avec une fonction qui creer les liens demandés
     #exemple :
     #for r in data["liens"]:
     #    if r["from"] == nom_routeur:
@@ -104,6 +103,11 @@ def rip_commandes(addresse_ipv6,interface, nom_routeur):
     for cmd in commandes:
         print(cmd)
 
-rip_commandes("1000:0:0:1::2/64","g1/0","R3")
-rip_commandes("1000:0:0:1::1/64","g1/0","R4")
+rip_commandes("1000:0:0:1::1/64","g1/0","R1","R2")
+print()
+rip_commandes("1000:0:0:1::2/64","g1/0","R2","R1")
+print()
+rip_commandes("1000:0:0:2::2/64","g2/0","R2","R3")
+print()
+rip_commandes("1000:0:0:2::3/64","g2/0","R3","R2")
 #rip_commandes("1000:0:0:2::1/64","g2/0","R3")
