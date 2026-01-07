@@ -8,6 +8,7 @@ from gns3fy import gns3fy, Project, Node, Link
 import telnetlib3.telnetlib as telnetlib
 
 import datetime
+import time
 
 
 class GnsProject:
@@ -19,16 +20,16 @@ class GnsProject:
         self.lab = gns3fy.Project(name=self.name, connector=self.server)
 
 
-    def createNew(self, autoRecover=False):
-        if autoRecover:
+    def create_new(self, auto_recover=False):
+        if auto_recover:
             if self.server.get_project(self.name) is not None:
-                self.recoverExisting()
+                self.recover_existing()
 
                 return
         self.lab.create()
 
 
-    def recoverExisting(self):
+    def recover_existing(self):
         self.lab.get()
         
 
@@ -40,11 +41,11 @@ class GnsProject:
         self.lab.close()
 
 
-    def createRouter(self, name="Router", model="c7200", autoRecover=False):
-        if autoRecover:
+    def create_router(self, name="Router", model="c7200", auto_recover=False):
+        if auto_recover:
             for node in self.lab.nodes:
                 if node.name == name:
-                    self.recoverRouter(name, model)
+                    self.recover_router(name, model)
 
                     return
         
@@ -60,7 +61,7 @@ class GnsProject:
         self.routers[name] = router
 
 
-    def recoverRouter(self,  name="Router", model="c7200"):
+    def recover_router(self,  name="Router", model="c7200"):
         router = Node(
             project_id=self.lab.project_id,
             connector=self.server,
@@ -73,7 +74,7 @@ class GnsProject:
         self.routers[name] = router
 
 
-    def getRouterInterface(self, router_name, port_name):
+    def get_router_interface(self, router_name, port_name):
         if port_name is None:
             print("ERROR Please give at least one type of name")
 
@@ -84,9 +85,9 @@ class GnsProject:
                 return {"adapter": port["adapter_number"], "port": port["port_number"]}
             
 
-    def createLink(self, r1_name, r1_port_name, r2_name, r2_port_name):
-        r1_interface = self.getRouterInterface(r1_name, r1_port_name)
-        r2_interface = self.getRouterInterface(r2_name, r2_port_name)
+    def create_link(self, r1_name, r1_port_name, r2_name, r2_port_name):
+        r1_interface = self.get_router_interface(r1_name, r1_port_name)
+        r2_interface = self.get_router_interface(r2_name, r2_port_name)
 
         nodes = [
             dict(node_id=self.routers[r1_name].node_id,
@@ -101,7 +102,7 @@ class GnsProject:
         link.create()
 
 
-    def getRouterPort(self, router_name):
+    def get_router_port(self, router_name):
         return self.routers[router_name].console
 
     def run_on_router(self, name, commands):
