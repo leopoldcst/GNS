@@ -1,0 +1,200 @@
+{
+  "as": [
+    {
+      "id": 1,
+      "protocole_interne": {
+        "type": "RIP"
+      }
+    },
+    {
+      "id": 2,
+      "protocole_interne": {
+        "type": "OSPF",
+        "process_id": 1
+      }
+    }
+  ],
+
+  "routeurs": [
+    { "nom": "R1", "as": 1 },
+    { "nom": "R2", "as": 1 },
+    { "nom": "R3", "as": 1 },
+    { "nom": "R4", "as": 1 },
+    { "nom": "R5", "as": 1 },
+    { "nom": "R6", "as": 1 },
+    { "nom": "R7", "as": 1 },
+
+    { "nom": "R8", "as": 2 },
+    { "nom": "R9", "as": 2 },
+    { "nom": "R10", "as": 2 },
+    { "nom": "R11", "as": 2 },
+    { "nom": "R12", "as": 1 },
+    { "nom": "R13", "as": 1 },
+    { "nom": "R14", "as": 1 }
+  ],
+
+  "liens": [
+    {
+      "from": "R1",
+      "to": "R2",
+      "interface_from": "g1/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R1",
+      "to": "R3",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R2",
+      "to": "R3",
+      "interface_from": "g2/0",
+      "interface_to": "g2/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R2",
+      "to": "R4",
+      "interface_from": "g3/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R3",
+      "to": "R5",
+      "interface_from": "g3/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R4",
+      "to": "R5",
+      "interface_from": "g2/0",
+      "interface_to": "g2/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R4",
+      "to": "R6",
+      "interface_from": "g3/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R4",
+      "to": "R7",
+      "interface_from": "g7/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R5",
+      "to": "R6",
+      "interface_from": "g3/0",
+      "interface_to": "g2/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R5",
+      "to": "R7",
+      "interface_from": "g7/0",
+      "interface_to": "g2/0",
+      "type": "intra-as"
+    },
+
+
+
+
+    {
+      "from": "R6",
+      "to": "R8",
+      "interface_from": "g3/0",
+      "interface_to": "g3/0",
+      "type": "inter-as"
+    },
+    {
+      "from": "R7",
+      "to": "R9",
+      "interface_from": "g3/0",
+      "interface_to": "g3/0",
+      "type": "inter-as"
+    },
+
+
+
+
+    {
+      "from": "R14",
+      "to": "R12",
+      "interface_from": "g1/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R14",
+      "to": "R13",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R12",
+      "to": "R13",
+      "interface_from": "g2/0",
+      "interface_to": "g2/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R12",
+      "to": "R10",
+      "interface_from": "g3/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R13",
+      "to": "R11",
+      "interface_from": "g3/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R10",
+      "to": "R11",
+      "interface_from": "g2/0",
+      "interface_to": "g2/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R10",
+      "to": "R8",
+      "interface_from": "g3/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R10",
+      "to": "R9",
+      "interface_from": "g7/0",
+      "interface_to": "g1/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R11",
+      "to": "R8",
+      "interface_from": "g3/0",
+      "interface_to": "g2/0",
+      "type": "intra-as"
+    },
+    {
+      "from": "R11",
+      "to": "R9",
+      "interface_from": "g7/0",
+      "interface_to": "g2/0",
+      "type": "intra-as"
+    }
+  ]
+}
