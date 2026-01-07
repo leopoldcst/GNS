@@ -6,30 +6,23 @@ Created on Tue Dec 16 16:36:39 2025
 """
 import json
 
-FICHIER_JSON = "config.json"
-ROUTEUR_CIBLE = "R3"   # <- change ici si besoin
+FICHIER_JSON = "config_final_struct.json"
 
-def ospf_commandes(addresse_ipv6,interface,nom_routeur):
+def ospf_commandes(addresse_ipv6,interface,nom_routeur,nom_routeur2):
     # Charger le JSON
     with open(FICHIER_JSON, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    as_data = data[0]
+    ROUTEUR_CIBLE = nom_routeur2   # <- change ici si besoin avec une fonction qui creer les liens demandés
 
-    # Trouver le routeur cible
-    routeur = None
-    for r in as_data["routeurs"]:
-        if r["nom"] == ROUTEUR_CIBLE:
-            routeur = r
-            break
-
-    if routeur is None:
-        print("Routeur non trouvé")
-        return
-
+    
     commandes = []
     process_id = int(nom_routeur[1:])
-    area_nb = 1
+    for ro in data["routeurs"]:
+        if ro["nom"] == nom_routeur:
+            area_nb = ro["as"]
+            break
+    
 
     
     # Début configuration
@@ -55,24 +48,18 @@ def ospf_commandes(addresse_ipv6,interface,nom_routeur):
     # Affichage (ou écriture fichier)
     for cmd in commandes:
         print(cmd)
+
+       
+    #    fin programme OSPF
+    #    début programme RIP 
         
-def rip_commandes(addresse_ipv6,interface, nom_routeur):
+def rip_commandes(addresse_ipv6,interface, nom_routeur,nom_routeur2):
     # Charger le JSON
     with open(FICHIER_JSON, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    as_data = data[0]
-
-    # Trouver le routeur cible
-    routeur = None
-    for r in as_data["routeurs"]:
-        if r["nom"] == ROUTEUR_CIBLE:
-            routeur = r
-            break
-
-    if routeur is None:
-        print("Routeur non trouvé")
-        return
+  
+    ROUTEUR_CIBLE = nom_routeur2   # <- change ici si besoin avec une fonction qui creer les liens demandés
 
     commandes = []
     process_name = "RIP_AS"
@@ -104,6 +91,10 @@ def rip_commandes(addresse_ipv6,interface, nom_routeur):
     for cmd in commandes:
         print(cmd)
 
-rip_commandes("1000:0:0:1::2/64","g1/0","R3")
-rip_commandes("1000:0:0:1::1/64","g1/0","R4")
-#rip_commandes("1000:0:0:2::1/64","g2/0","R3")
+rip_commandes("1000:0:0:1::1/64","g1/0","R1","R2")
+print()
+rip_commandes("1000:0:0:1::2/64","g1/0","R2","R1")
+print()
+rip_commandes("1000:0:0:2::2/64","g2/0","R2","R3")
+print()
+rip_commandes("1000:0:0:2::3/64","g2/0","R3","R2")
