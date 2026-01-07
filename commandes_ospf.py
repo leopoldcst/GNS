@@ -14,7 +14,7 @@ def ospf_commandes(addresse_ipv6,interface,nom_routeur):
     with open(FICHIER_JSON, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    as_data = data[0]
+    as_data = data[1]
 
     # Trouver le routeur cible
     routeur = None
