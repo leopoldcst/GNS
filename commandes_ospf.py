@@ -8,14 +8,12 @@ import json
 
 FICHIER_JSON = "config_final_struct.json"
 
-
 def ospf_commandes(addresse_ipv6,interface,nom_routeur):
     # Charger le JSON
     with open(FICHIER_JSON, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     ROUTEUR_CIBLE = "R3"   # <- change ici si besoin avec une fonction qui creer les liens demandés
-    as_data = data[1]
 
     # Trouver le routeur cible
     routeur = None
