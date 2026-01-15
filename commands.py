@@ -190,3 +190,23 @@ def redistribute_iBGP(as_number, igp, process_id): ## à faire que sur les route
     return conf
 
 
+# address_blocked_list = 
+# [
+#     {"adress_blocked" : value , "for_who" : [addresses] }
+#     {"adress_blocked" : value , "for_who" : [addresses] }
+# ]
+
+
+
+def create_access_list(address_blocked_list, name_acl, deny):
+    conf = [
+        "enable",
+        "configure terminal",
+        f"ipv6 access-list {name_acl} "
+           ]
+    for dico in address_blocked_list:
+        for address in dico[for_who]:
+            if deny:
+                conf.append(f"deny {dico["address_blocked"]} {address}")
+            else:
+                conf.append(f"no deny {dico["address_blocked"]} {address}")
