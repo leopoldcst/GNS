@@ -49,17 +49,144 @@ def ospf_config(address, interface, name, area_nb):
     process_id = int(name[1:])
     # conf += baseRouterConfig(name)
     # conf += addressConfig(interface,address)
+
     conf += [
         "enable",
         "configure terminal",
         f"ipv6 router ospf {process_id}",
-        f"router-id {process_id}.{process_id}.{process_id}.{process_id}",
-        f"interface {interface}"
-        f"ipv6 ospf {process_id} area {area_nb}",
+        f" router-id {process_id}.{process_id}.{process_id}.{process_id}",
+        "exit",
+        f"interface {interface}",
+        f" ipv6 ospf {process_id} area {area_nb}",
+        "exit",
         "end",
         " "
     ]
 
     return conf
 
+
    #"redistribute connected" à activer si on veut partager tous les sous reseaux auxquels on appartient, ce qui n'est pas le cas tout le temps :)
+
+def ipv6_sans_masque(ipv6):
+    """Supprime le /64 si présent (obligatoire pour BGP neighbor)"""
+    return ipv6.split("/")[0]
+
+
+def ebgpConfig(address1, 
+               interface1,
+               name1,
+               as1, 
+               address2, 
+               interface2,
+               name2,
+               as2):
+    
+    neighbor_R1 = ipv6_sans_masque(address2)
+    neighbor_R2 = ipv6_sans_masque(address1)
+
+    commandes_1 = [
+        "configure terminal",
+        f"router bgp {as1}",
+        f" bgp router-id {as1}.{as1}.{as1}.{as1}",
+        " no bgp default ipv4-unicast",
+        f" neighbor {neighbor_R1} remote-as {as2}",
+        " address-family ipv6 unicast",
+        f"  neighbor {neighbor_R1} activate",
+        " exit-address-family",
+        "end"
+    ]
+
+    # =========================
+    # Commandes R2
+    # =========================
+    commandes_2 = [
+
+        "configure terminal",
+        f"router bgp {as2}",
+        f" bgp router-id {as2}.{as2}.{as2}.{as2}",
+        " no bgp default ipv4-unicast",
+        f" neighbor {neighbor_R2} remote-as {as1}",
+        " address-family ipv6 unicast",
+        f"  neighbor {neighbor_R2} activate",
+        " exit-address-family",
+        "end"
+    ]
+
+    return commandes_1, commandes_2
+
+
+#print(ebgpConfig("1001::1","g1/0","R1","1","1001:2","g1/0","R2","2"))
+
+def ibgpConfig(routers, as_number, interface_loopback="Loopback0"):
+    configs = {}
+
+    for router in routers:
+        name = router["name"]
+        router_id = int(name[1:])
+
+        commandes = [
+            "enable",
+            "configure terminal",
+            f"router bgp {as_number}",
+            f" bgp router-id {router_id}.{router_id}.{router_id}.{router_id}",
+            " no bgp default ipv4-unicast"
+        ]
+
+        for other in routers:
+            if other["name"] != name:
+                other_ip = other["loopback"].split("/")[0]
+                commandes += [
+                    f" neighbor {other_ip} remote-as {as_number}",
+                    f" neighbor {other_ip} update-source {interface_loopback}"
+                ]
+
+        commandes.append(" address-family ipv6 unicast")
+
+        for other in routers:
+            if other["name"] != name:
+                other_ip = other["loopback"].split("/")[0]
+                commandes.append(f"  neighbor {other_ip} activate")
+
+        commandes += [
+            " exit-address-family",
+            "end",
+            " "
+        ]
+
+        configs[name] = commandes
+
+    return configs
+
+def redistribute_iBGP(as_number, igp, process_id): ## à faire que sur les routeurs de bordure pour annoncer les routes à BGP
+    """
+    Redistribue un IGP (OSPF ou RIP) dans BGP IPv6
+    """
+
+    conf = [
+        "enable",
+        "configure terminal",
+        f"router bgp {as_number}",
+        " address-family ipv6 unicast"
+    ]
+
+    igp = igp.lower()
+
+    if igp == "ospf":
+        conf.append(f"  redistribute ospf {process_id}")
+
+    elif igp == "rip":
+        conf.append(f"  redistribute rip {process_id}")
+
+    else:
+        raise ValueError("IGP non supporté : utiliser 'ospf' ou 'rip'")
+
+    conf += [
+        " exit-address-family",
+        "end",
+        " "
+    ]
+
+    return conf
+
+
