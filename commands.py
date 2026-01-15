@@ -210,3 +210,5 @@ def create_access_list(address_blocked_list, name_acl, deny):
                 conf.append(f"deny {dico["address_blocked"]} {address}")
             else:
                 conf.append(f"permit {dico["address_blocked"]} {address}")
+    conf.append("end")
+    conf.append(" ")
