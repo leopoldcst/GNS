@@ -215,14 +215,24 @@ def create_access_list(address_blocked_list, name_acl, deny):     #deny = true =
     conf.append(" ")
     return conf
 
-def create_route_map(map_tag, name_acl, sequence_number, deny):
+
+
+def create_route_map(map_tag, name_acl, sequence_number, deny=True):
     conf = [
         "enable",
         "configure terminal"
-           ]
-    if deny:
-        conf.append(f"route-map {map_tag} deny {sequence_number}")
-    else:
-        conf.append(f"route-map {map_tag} permit {sequence_number}")
-    conf.append(f"match ipv6 address {name_acl}")
+    ]
+
+    action = "deny" if deny else "permit"
+    conf.append(f"route-map {map_tag} {action} {sequence_number}")
+    conf.append(f" match ipv6 address {name_acl}")
+
+    # obligatoire sinon ils les deny all
+    conf.append(f"route-map {map_tag} permit {sequence_number + 10}")
+
+    conf += [
+        "end",
+        " "
+    ]
+
     return conf
