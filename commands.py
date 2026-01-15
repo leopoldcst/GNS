@@ -237,4 +237,54 @@ def create_route_map(map_tag, name_acl, sequence_number, deny=True):
 
     return conf
 
+def apply_route_map(address, map_tag, as_number, entry=True):
+    conf = []
+    conf += [
+        "enable",
+        "configure terminal",
+        f"router bgp {as_number}",
+        "address-family ipv6 unicast"
+             ]
+    if entry:
+        conf.append(f"neighbor {address} route-map {map_tag} in")
+    else:
+        conf.append(f"neighbor {address} route-map {map_tag} out")
+
+    conf.append("end")
+    conf.append("")
+    return conf
+
+
+def enable_community(): # à faire sur tous les routeurs pour qu'ils comprennent quand on fait  f" set community {community}"
+    return [
+        "enable",
+        "configure terminal",
+        "ip bgp-community new-format",
+        "end",
+        " "
+    ]
+
+def create_community_tag_route_map(map_tag, community, sequence_number=10):
+    conf = [
+        "enable",
+        "configure terminal",
+        f"route-map {map_tag} permit {sequence_number}",
+        f" set community {community}",
+        "end",
+        " "
+    ]
+    return conf
+
+## cette fonction peut etre combine avec create_route_map
+
+
+
+
+
+
+
+
+
+    
+
 
