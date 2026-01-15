@@ -3,11 +3,11 @@
   "as": [
     {
       "nb": "1",
-      "internal_protocl": "RIP"
+      "internal_protocol": "RIP"
     },
     {
       "nb": "2",
-      "internal_protocl": "RIP"
+      "internal_protocol": "RIP"
     }
   ],
   "routers": [
