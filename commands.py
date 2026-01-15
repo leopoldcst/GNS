@@ -225,4 +225,6 @@ def create_route_map(map_tag, name_acl, sequence_number, deny):
     else:
         conf.append(f"route-map {map_tag} permit {sequence_number}")
     conf.append(f"match ipv6 address {name_acl}")
+    conf.append("end")
+    conf.append(" ")
     return conf
