@@ -205,7 +205,7 @@ def create_access_list(address_blocked_list, name_acl, deny):
         f"ipv6 access-list {name_acl} "
            ]
     for dico in address_blocked_list:
-        for address in dico[for_who]:
+        for address in dico["for_who"]:
             if deny:
                 conf.append(f"deny {dico["address_blocked"]} {address}")
             else:
