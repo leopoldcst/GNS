@@ -7,7 +7,7 @@
     },
     {
       "nb": "2",
-      "internal_protocol": "RIP"
+      "internal_protocol": "OSPF"
     }
   ],
   "routers": [
