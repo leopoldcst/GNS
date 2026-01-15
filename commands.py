@@ -221,6 +221,7 @@ def create_route_map(map_tag, name_acl, sequence_number, deny=True):
     conf = [
         "enable",
         "configure terminal"
+<<<<<<< HEAD
     ]
 
     action = "deny" if deny else "permit"
@@ -236,3 +237,14 @@ def create_route_map(map_tag, name_acl, sequence_number, deny=True):
     ]
 
     return conf
+=======
+           ]
+    if deny:
+        conf.append(f"route-map {map_tag} deny {sequence_number}")
+    else:
+        conf.append(f"route-map {map_tag} permit {sequence_number}")
+    conf.append(f"match ipv6 address {name_acl}")
+    conf.append("end")
+    conf.append(" ")
+    return conf
+>>>>>>> 12f9f6786f88d38ce2ea6c18efacdd482d139111
