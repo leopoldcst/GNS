@@ -87,12 +87,12 @@ def ebgpConfig(address1,
     commandes_1 = [
         "configure terminal",
         f"router bgp {as1}",
-        f" bgp router-id {as1}.{as1}.{as1}.{as1}",
-        " no bgp default ipv4-unicast",
-        f" neighbor {neighbor_R1} remote-as {as2}",
-        " address-family ipv6 unicast",
-        f"  neighbor {neighbor_R1} activate",
-        " exit-address-family",
+        f"bgp router-id {as1}.{as1}.{as1}.{as1}",
+        "no bgp default ipv4-unicast",
+        f"neighbor {neighbor_R1} remote-as {as2}",
+        "address-family ipv6 unicast",
+        f"neighbor {neighbor_R1} activate",
+        "exit-address-family",
         "end"
     ]
 
@@ -103,12 +103,12 @@ def ebgpConfig(address1,
 
         "configure terminal",
         f"router bgp {as2}",
-        f" bgp router-id {as2}.{as2}.{as2}.{as2}",
-        " no bgp default ipv4-unicast",
-        f" neighbor {neighbor_R2} remote-as {as1}",
-        " address-family ipv6 unicast",
-        f"  neighbor {neighbor_R2} activate",
-        " exit-address-family",
+        f"bgp router-id {as2}.{as2}.{as2}.{as2}",
+        "no bgp default ipv4-unicast",
+        f"neighbor {neighbor_R2} remote-as {as1}",
+        "address-family ipv6 unicast",
+        f"neighbor {neighbor_R2} activate",
+        "exit-address-family",
         "end"
     ]
 
@@ -128,27 +128,27 @@ def ibgpConfig(routers, as_number, interface_loopback="Loopback0"):
             "enable",
             "configure terminal",
             f"router bgp {as_number}",
-            f" bgp router-id {router_id}.{router_id}.{router_id}.{router_id}",
-            " no bgp default ipv4-unicast"
+            f"bgp router-id {router_id}.{router_id}.{router_id}.{router_id}",
+            "no bgp default ipv4-unicast"
         ]
 
         for other in routers:
             if other["name"] != name:
-                other_ip = other["loopback"].split("/")[0]
+                other_ip = ipv6_sans_masque(other["loopback"])
                 commandes += [
-                    f" neighbor {other_ip} remote-as {as_number}",
-                    f" neighbor {other_ip} update-source {interface_loopback}"
+                    f"neighbor {other_ip} remote-as {as_number}",
+                    f"neighbor {other_ip} update-source {interface_loopback}"
                 ]
 
         commandes.append(" address-family ipv6 unicast")
 
         for other in routers:
             if other["name"] != name:
-                other_ip = other["loopback"].split("/")[0]
-                commandes.append(f"  neighbor {other_ip} activate")
+                other_ip = ipv6_sans_masque(other["loopback"])
+                commandes.append(f"neighbor {other_ip} activate")
 
         commandes += [
-            " exit-address-family",
+            "exit-address-family",
             "end",
             " "
         ]
@@ -159,29 +159,29 @@ def ibgpConfig(routers, as_number, interface_loopback="Loopback0"):
 
 def redistribute_iBGP(as_number, igp, process_id): ## à faire que sur les routeurs de bordure pour annoncer les routes à BGP
     """
-    Redistribue un IGP (OSPF ou RIP) dans BGP IPv6
+    Redistribue un IGP (OSPF ou RIP) dans BGP 
     """
 
     conf = [
         "enable",
         "configure terminal",
         f"router bgp {as_number}",
-        " address-family ipv6 unicast"
+        "address-family ipv6 unicast"
     ]
 
     igp = igp.lower()
 
     if igp == "ospf":
-        conf.append(f"  redistribute ospf {process_id}")
+        conf.append(f"redistribute ospf {process_id}")
 
     elif igp == "rip":
-        conf.append(f"  redistribute rip {process_id}")
+        conf.append(f"redistribute rip {process_id}")
 
     else:
         raise ValueError("IGP non supporté : utiliser 'ospf' ou 'rip'")
 
     conf += [
-        " exit-address-family",
+        "exit-address-family",
         "end",
         " "
     ]
