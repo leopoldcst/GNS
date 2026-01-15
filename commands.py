@@ -24,12 +24,11 @@ def address_config(interface, address):
     ]
 
 
-def ripConfig(address, interface, name):
-
+def rip_config(address, interface, name):
     process_name = "RIP_AS"
     conf = []
-    conf += baseRouterConfig(name)
-    conf += addressConfig(interface,address)
+    # conf += baseRouterConfig(name)
+    # conf += addressConfig(interface,address)
     conf += [
         "enable"
         "configure terminal"
@@ -45,11 +44,11 @@ def ripConfig(address, interface, name):
     return conf
 
 
-def ospfConfig(address, interface, name, area_nb):
+def ospf_config(address, interface, name, area_nb):
     conf = []
     process_id = int(name[1:])
-    conf += baseRouterConfig(name)
-    conf += addressConfig(interface,address)
+    # conf += baseRouterConfig(name)
+    # conf += addressConfig(interface,address)
     conf += [
         "enable",
         "configure terminal",

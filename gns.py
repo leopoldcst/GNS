@@ -112,8 +112,6 @@ class GnsProject:
             routerSocket.run(cmd)
 
         routerSocket.close()
-        # await telnet_client("localhost", self.get_router_port(name), commands)
-
 
 
 class RouterSocket:
@@ -130,7 +128,7 @@ class RouterSocket:
     def run(self, command):
         # print(f"-> {command}")
         self.tn.write(command.encode("ascii")+b"\r")
-        time.sleep(0.005)
+        time.sleep(0.03)
         self.emptyChannel()
 
 

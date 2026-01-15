@@ -13,33 +13,38 @@ def find_as(intent, name):
 
 def find_internal_protocol(intent, as_nb):
     for as_ in intent["as"]:
-        if as_["nb"] == as_nb:
+        if str(as_["nb"]) == str(as_nb):
             return as_["internal_protocol"]
 
 
-def configure_interface(intent, name, interface, to):
+def cmd_configure_interface(intent, name, interface, to, link_type):
+        cmd_list = []
         as_nb = find_as(intent, name)
         addr = ipv6_link_intra_as(name, to, as_nb)[name]
 
-        print(f"Upping interface {interface} on {name}")
+        print(f"Configuring {interface} on {name}")
 
-        g.run_on_router(name, commands.address_config(interface, addr)) # Up the interface and setting ip address
+        cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
         
-        if link["type"] == "intra-as":
+        if link_type == "intra-as":
             if find_internal_protocol(intent, as_nb) == "RIP":
-                print(f"Enabling RIP at {interface} on {name}")
-                # g.run_on_router(name, commands.rip_config(link["from"]), addr)
+                print(f"Enabling RIP")
+                cmd_list += commands.rip_config(addr, interface, name)
 
             elif find_internal_protocol(intent, as_nb) == "OPSF":
-                print(f"Enabling OSPF at {interface} on {name}")
-                # g.run_on_router(name, commands.opsf_config(link["from"]), addr)
+                print(f"Enabling OSPF")
+                cmd_list += commands.opsf_config(addr, interface, name, 0)
 
-        if link["type"] == "inter-as":
+        if link_type == "inter-as":
             # Implement BGP
             pass
 
+        return cmd_list
+
 
 if __name__ == "__main__":
+    cmds = {}
+
     ### Reading the intent file
     f = open(INTENT_PATH, "r", encoding="utf-8")
     intent = json.load(f)
@@ -60,10 +65,9 @@ if __name__ == "__main__":
 
         print(f"Creating router {name}")
         g.create_router(name=name, auto_recover=True)
-        g.routers[name].start()
 
         print("Configuring the router")
-        g.run_on_router(name, commands.base_router_config(name))
+        cmds[name] = commands.base_router_config(name)
         
 
     ### Link and protocol setup
@@ -76,8 +80,22 @@ if __name__ == "__main__":
 
 
         # Configure the interface for both routers of the link
-        configure_interface(intent, link["from"], link["interface_from"], link["to"])
-        configure_interface(intent, link["to"], link["interface_to"], link["from"])
+        cmds[name] += cmd_configure_interface(intent,
+                                                  link["from"],
+                                                  link["interface_from"],
+                                                  link["to"],
+                                                  link["type"])
 
-    
-    # g.lab.arrange_nodes_circular()
+        cmds[name] += cmd_configure_interface(intent,
+                                                  link["to"],
+                                                  link["interface_to"],
+                                                  link["from"],
+                                                  link["type"])
+
+    for name, cmd in cmds.items():
+        print(f"Running config for {name}")
+        print(cmd)
+        g.routers[name].start()
+        g.run_on_router(name, cmd)
+
+    g.lab.arrange_nodes_circular()
