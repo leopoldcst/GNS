@@ -192,13 +192,13 @@ def redistribute_iBGP(as_number, igp, process_id): ## à faire que sur les route
 
 # address_blocked_list = 
 # [
-#     {"adress_blocked" : value , "for_who" : [addresses] }
+#     {"adress_blocked" : value , "for_who" : [addresses] }        addreses peut valoir "any"
 #     {"adress_blocked" : value , "for_who" : [addresses] }
 # ]
 
 
 
-def create_access_list(address_blocked_list, name_acl, deny):
+def create_access_list(address_blocked_list, name_acl, deny):     #deny = true => blocked address  deny = false => route autorisee
     conf = [
         "enable",
         "configure terminal",
@@ -210,6 +210,19 @@ def create_access_list(address_blocked_list, name_acl, deny):
                 conf.append(f"deny {dico["address_blocked"]} {address}")
             else:
                 conf.append(f"permit {dico["address_blocked"]} {address}")
+    #bonne pratique : conf.append("permit ipv6 any any")
     conf.append("end")
     conf.append(" ")
-    return(conf)
+    return conf
+
+def create_route_map(map_tag, name_acl, sequence_number, deny):
+    conf = [
+        "enable",
+        "configure terminal"
+           ]
+    if deny:
+        conf.append(f"route-map {map_tag} deny {sequence_number}")
+    else:
+        conf.append(f"route-map {map_tag} permit {sequence_number}")
+    conf.append(f"match ipv6 address {name_acl}")
+    return conf
