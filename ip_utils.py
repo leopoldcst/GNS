@@ -14,7 +14,9 @@ def ipv6_link_inter_as(router_a, as_a, router_b, as_b):
     id_a = int(''.join(filter(str.isdigit, router_a)))
     id_b = int(''.join(filter(str.isdigit, router_b)))
 
-    prefix = f"fd{as_a}{as_b}:{id_a}{id_b}::"
+    low_as, high_as = sorted([as_a, as_b])
+    low_id, high_id = sorted([id_a, id_b])
+    prefix = f"fd{low_as}{high_as}:{low_id}{high_id}::"
 
     return {
         router_a: f"{prefix}{id_a}/64",

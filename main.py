@@ -18,34 +18,35 @@ def find_internal_protocol(intent, as_nb):
 
 
 def cmd_configure_interface(intent, name, interface, to, link_type):
-        cmd_list = []
-        as_nb = find_as(intent, name)
+    cmd_list = []
+    as_nb = find_as(intent, name)
+
+    print(f"Configuring {interface} on {name}")
+
+    if link_type == "intra-as":
         addr = ipv6_link_intra_as(name, to, as_nb)[name]
 
-        print(f"Configuring {interface} on {name}")
+        if find_internal_protocol(intent, as_nb) == "RIP":
+            print(f"Enabling RIP")
+            cmd_list += commands.rip_config(addr, interface, name)
 
-        cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
-        
-        if link_type == "intra-as":
-            if find_internal_protocol(intent, as_nb) == "RIP":
-                print(f"Enabling RIP")
-                cmd_list += commands.rip_config(addr, interface, name)
+        elif find_internal_protocol(intent, as_nb) == "OSPF":
+            print(f"Enabling OSPF")
+            cmd_list += commands.ospf_config(addr, interface, name, 0)
 
-            elif find_internal_protocol(intent, as_nb) == "OSPF":
-                print(f"Enabling OSPF")
-                cmd_list += commands.ospf_config(addr, interface, name, 0)
+    if link_type == "inter-as":
+        # Implement BGP
+        print(f"Enabling eBGP")
+        to_as_nb = find_as(intent, to)
+        to_addr = commands.ipv6_sans_masque(ipv6_link_inter_as(name, as_nb, to, to_as_nb)[to])
+    
+        addr = ipv6_link_inter_as(name, as_nb, to, to_as_nb)[name]
 
-        if link_type == "inter-as":
-            # Implement BGP
-            print(f"Enabling eBGP")
-            to_as_nb = find_as(intent, to)
-            to_addr = commands.ipv6_sans_masque(ipv6_link_inter_as(name, as_nb, to, to_as_nb)[to])
+        cmd_list += commands.e_bgp_neighbor_config(as_nb, to_addr, to_as_nb)
+    
+    cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
 
-            cmd_list += commands.e_bgp_neighbor_config(as_nb, to_addr, to_as_nb)
-
-            pass
-
-        return cmd_list
+    return cmd_list
 
 
 def write_configs(cmds):
