@@ -189,7 +189,14 @@
     {
       "fromAs" : 1,
       "toAs" : 2,
-      "type" : "clients-to-provider"
+      "type" : "client-to-provider" 
     }
-  ]
+  ],
+
+  "valueCommunity":
+  {
+    "client" : 42,
+    "peer" : 69,
+    "provider" : 21
+  }
 }

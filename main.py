@@ -118,7 +118,7 @@ if __name__ == "__main__":
     # Find routers of the same as
     # Construct a dictionnary with the router in the AS and their respective loopback address
     for as_nb in intent["as"]:
-        as_routers_loopbacks = []
+        as_routers = []
 
         for router in intent["routers"]:
             if router["as"] != as_nb:
@@ -131,9 +131,9 @@ if __name__ == "__main__":
                 "loopback": ipv6_loopback(router["name"], router["as"])
             })
 
-        print(commands.whole_as_i_bgp_config(as_routers_loopbacks, as_nb))
+        print(commands.whole_as_i_bgp_config(as_routers, as_nb))
 
-        for name, cmd in commands.whole_as_i_bgp_config(as_routers_loopbacks, as_nb).items():
+        for name, cmd in commands.whole_as_i_bgp_config(as_routers, as_nb).items():
             cmds[name] += cmd
 
 
