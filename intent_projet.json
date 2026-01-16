@@ -187,8 +187,9 @@
   "asRelationships" : 
   [
     {
-      "name" : 1,"neighbor" : [{"name" : 2,"status" : "provider"}], // premier AS concerné : son numéro et son statut
-      "name" : 2,"neighbor" : [{"name" : 1,"status" : "peer"}]  // deuxième AS concerné : son numéro et son statut
+      "fromAs" : 1,
+      "toAs" : 2,
+      "type" : "peer-to-provider"
     }
   ]
 }
