@@ -99,7 +99,7 @@ class GnsProject:
         ]
         
         link = Link(project_id=self.lab.project_id, connector=self.server, nodes=nodes)
-        # link.create()
+        link.create()
 
 
     def get_router_port(self, router_name):
