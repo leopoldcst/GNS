@@ -182,5 +182,13 @@
       "interface_to": "g2/0",
       "type": "intra-as"
     }
+  ],
+
+  "asRelationships" : 
+  [
+    {
+      "as1" : [1, "peer"], // premier AS concerné : son numéro et son statut
+      "as2" : [2, "provider"]  // deuxième AS concerné : son numéro et son statut
+    }
   ]
 }
