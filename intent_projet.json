@@ -189,7 +189,7 @@
     {
       "fromAs" : 1,
       "toAs" : 2,
-      "type" : "client-to-provider"
+      "type" : "clients-to-provider"
     }
   ]
 }
