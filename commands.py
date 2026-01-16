@@ -228,45 +228,17 @@ def create_access_list(address_blocked_list, name_acl, deny):     #deny = true =
 
 
 
-def create_route_map(map_tag, name_acl, sequence_number, deny=True):
-    conf = [
-        "enable",
-        "configure terminal"
-    ]
-
-    action = "deny" if deny else "permit"
-    conf.append(f"route-map {map_tag} {action} {sequence_number}")
-    conf.append(f" match ipv6 address {name_acl}")
-
-    # obligatoire sinon ils les deny all
-    conf.append(f"route-map {map_tag} permit {sequence_number + 10}")
-
-    conf += [
-        "end",
-        " "
-    ]
-
-    return conf
-
-# def create_route_map(map_tag, sequence_number=10, name_acl=None, deny=False, community=None):
+# def create_route_map(map_tag, name_acl, sequence_number, deny=True):
 #     conf = [
 #         "enable",
 #         "configure terminal"
 #     ]
 
 #     action = "deny" if deny else "permit"
-
 #     conf.append(f"route-map {map_tag} {action} {sequence_number}")
+#     conf.append(f" match ipv6 address {name_acl}")
 
-#     if name_acl:
-#         conf.append(f"match ipv6 address {name_acl}")
-
-#     if community:
-#         if deny:
-#             raise ValueError(
-#                 "Impossible de définir une community dans une route-map deny")
-#         conf.append(f"set community {community}")
-
+#     # obligatoire sinon ils les deny all
 #     conf.append(f"route-map {map_tag} permit {sequence_number + 10}")
 
 #     conf += [
@@ -275,6 +247,34 @@ def create_route_map(map_tag, name_acl, sequence_number, deny=True):
 #     ]
 
 #     return conf
+
+def create_route_map(map_tag, sequence_number=10, name_acl=None, deny=False, community=None):
+    conf = [
+        "enable",
+        "configure terminal"
+    ]
+
+    action = "deny" if deny else "permit"
+
+    conf.append(f"route-map {map_tag} {action} {sequence_number}")
+
+    if name_acl:
+        conf.append(f"match ipv6 address {name_acl}")
+
+    if community:
+        if deny:
+            raise ValueError(
+                "Impossible de définir une community dans une route-map deny")
+        conf.append(f"set community {community}")
+
+    conf.append(f"route-map {map_tag} permit {sequence_number + 10}")
+
+    conf += [
+        "end",
+        " "
+    ]
+
+    return conf
 
 
 def apply_route_map(address, map_tag, as_number, entry=True):
@@ -304,16 +304,31 @@ def enable_community(): # à faire sur tous les routeurs pour qu'ils comprennent
         " "
     ]
 
+def create_community_list(name, community, permit=True):
+
+    action = "permit" if permit else "deny"
+
+    return [
+        "enable",
+        "configure terminal",
+        f"ip community-list standard {name} {action} {community}",
+        " "
+    ]
 
 
+#################################################################
+#Comment initialiser une community et appliquer une règle dessus#
+#################################################################
 
-
-
-
-
+## Je fais un premier create_route_map puis apply_route_map 
+# qui tag toutes les routes. Après je créé la community-list lié 
+# avec le numéro de community puis j'applique la règle que je veux
 
 
 
     
+
+
+
 
 
