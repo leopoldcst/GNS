@@ -331,13 +331,3 @@ def create_community_list(name, community, permit=True):
 
 
 
-
-
-
-
-
-
-
-    
-
-

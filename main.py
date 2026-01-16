@@ -31,14 +31,15 @@ def cmd_configure_interface(intent, name, interface, to, link_type):
                 print(f"Enabling RIP")
                 cmd_list += commands.rip_config(addr, interface, name)
 
-            elif find_internal_protocol(intent, as_nb) == "OPSF":
+            elif find_internal_protocol(intent, as_nb) == "OSPF":
                 print(f"Enabling OSPF")
-                cmd_list += commands.opsf_config(addr, interface, name, 0)
+                cmd_list += commands.ospf_config(addr, interface, name, 0)
 
         if link_type == "inter-as":
             # Implement BGP
+            print(f"Enabling eBGP")
             to_as_nb = find_as(intent, to)
-            to_addr = ipv6_link_inter_as(name, as_nb, to, to_as_nb)[to]
+            to_addr = commands.ipv6_sans_masque(ipv6_link_inter_as(name, as_nb, to, to_as_nb)[to])
 
             cmd_list += commands.e_bgp_neighbor_config(as_nb, to_addr, to_as_nb)
 
@@ -75,31 +76,33 @@ if __name__ == "__main__":
 
 
     ### Router setup
-    for router in intent["routers"]:
-        name = router["name"]
+    if intent["createRouters"]:
+        for router in intent["routers"]:
+            name = router["name"]
 
-        print(f"Creating router {name}")
-        g.create_router(name=name, auto_recover=True)
+            print(f"Creating router {name}")
+            g.create_router(name=name, auto_recover=True)
 
-        print("Configuring the router")
-        cmds[name] = commands.base_router_config(name)
+            print("Configuring the router")
+            cmds[name] = commands.base_router_config(name)
         
 
     ### Link and protocol setup
     for link in intent["links"]:
-        print(f"Adding link from {link["interface_from"]} on {link["from"]} to {link["interface_to"]} on {link["to"]}")
-        g.create_link(link["from"], # Adding link inside GNS
-                    link["interface_from"],
-                    link["to"],
-                    link["interface_to"])
+        if intent["createLinks"]:
+            print(f"Adding link from {link["interface_from"]} on {link["from"]} to {link["interface_to"]} on {link["to"]}")
+            g.create_link(link["from"], # Adding link inside GNS
+                        link["interface_from"],
+                        link["to"],
+                        link["interface_to"])
 
 
         # Configure the interface for both routers of the link
         cmds[link["from"]] += cmd_configure_interface(intent,
-                                                      link["from"],
-                                                      link["interface_from"],
-                                                      link["to"],
-                                                      link["type"])
+                                                    link["from"],
+                                                    link["interface_from"],
+                                                    link["to"],
+                                                    link["type"])
 
         cmds[link["to"]] += cmd_configure_interface(intent,
                                                     link["to"],

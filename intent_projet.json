@@ -1,5 +1,7 @@
 {
   "project_name": "Test2",
+  "createRouters": true,
+  "createLinks": false,
   "as": [
     {
       "nb": "1",
