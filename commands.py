@@ -155,12 +155,13 @@ def whole_as_i_bgp_config(routers, as_nb, local_loopback_name="Loopback0"):
             other_ip = other["loopback"].split("/")[0]
             cmds += [
                 f"neighbor {other_ip} remote-as {as_nb}",
-                f"neighbor {other_ip} update-source {local_loopback_name}"
-                f"neighbor {other_ip} activate"
+                f"neighbor {other_ip} update-source {local_loopback_name}",
+                f"address-family ipv6 unicast",
+                f"neighbor {other_ip} activate",
+                "exit-address-family",
             ]
 
-        commandes += [
-            "exit-address-family",
+        cmds += [
             "end"
         ]
 

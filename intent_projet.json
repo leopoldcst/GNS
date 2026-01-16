@@ -2,6 +2,7 @@
   "project_name": "Test2",
   "createRouters": true,
   "createLinks": false,
+  "arrangeInCircle": false,
   "as": [
     {
       "nb": "1",

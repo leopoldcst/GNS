@@ -23,8 +23,10 @@ def cmd_configure_interface(intent, name, interface, to, link_type):
 
     print(f"Configuring {interface} on {name}")
 
+    
     if link_type == "intra-as":
         addr = ipv6_link_intra_as(name, to, as_nb)[name]
+        cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
 
         if find_internal_protocol(intent, as_nb) == "RIP":
             print(f"Enabling RIP")
@@ -34,6 +36,8 @@ def cmd_configure_interface(intent, name, interface, to, link_type):
             print(f"Enabling OSPF")
             cmd_list += commands.ospf_config(addr, interface, name, 0)
 
+            print(commands.ospf_config(addr, interface, name, 0))
+
     if link_type == "inter-as":
         # Implement BGP
         print(f"Enabling eBGP")
@@ -41,10 +45,10 @@ def cmd_configure_interface(intent, name, interface, to, link_type):
         to_addr = commands.ipv6_sans_masque(ipv6_link_inter_as(name, as_nb, to, to_as_nb)[to])
     
         addr = ipv6_link_inter_as(name, as_nb, to, to_as_nb)[name]
+        cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
 
         cmd_list += commands.e_bgp_neighbor_config(as_nb, to_addr, to_as_nb)
     
-    cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
 
     return cmd_list
 
@@ -121,11 +125,12 @@ if __name__ == "__main__":
 
     # Find routers of the same as
     # Construct a dictionnary with the router in the AS and their respective loopback address
-    for as_nb in intent["as"]:
+    for as_ in intent["as"]:
+        as_nb = as_["nb"]
         as_routers = []
 
         for router in intent["routers"]:
-            if router["as"] != as_nb:
+            if str(router["as"]) != str(as_nb):
                 continue
 
             cmds[router["name"]] += commands.address_config("Loopback0", ipv6_loopback(router["name"], router["as"]))
@@ -135,7 +140,8 @@ if __name__ == "__main__":
                 "loopback": ipv6_loopback(router["name"], router["as"])
             })
 
-        print(commands.whole_as_i_bgp_config(as_routers, as_nb))
+        # print(as_routers)
+        # print(commands.whole_as_i_bgp_config(as_routers, as_nb))
 
         for name, cmd in commands.whole_as_i_bgp_config(as_routers, as_nb).items():
             cmds[name] += cmd
@@ -143,6 +149,8 @@ if __name__ == "__main__":
 
     # cmds[router["name"]] += commands.ibgpConfig(x, as_nb)
 
+
     write_configs(cmds)
 
-    # g.lab.arrange_nodes_circular()
+    if intent["arrangeInCircle"]:
+        g.lab.arrange_nodes_circular()
