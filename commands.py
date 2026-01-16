@@ -303,6 +303,26 @@ def enable_community(): # à faire sur tous les routeurs pour qu'ils comprennent
         " "
     ]
 
+def create_community_list(name, community, permit=True):
+
+    action = "permit" if permit else "deny"
+
+    return [
+        "enable",
+        "configure terminal",
+        f"ip community-list standard {name} {action} {community}",
+        " "
+    ]
+
+
+#################################################################
+#Comment initialiser une community et appliquer une règle dessus#
+#################################################################
+
+## Je fais un premier create_route_map puis apply_route_map 
+# qui tag toutes les routes. Après je créé la community-list lié 
+# avec le numéro de community puis j'applique la règle que je veux
+
 
 
     
