@@ -124,7 +124,7 @@ if __name__ == "__main__":
             if router["as"] != as_nb:
                 continue
 
-            cmds[router["name"]] += address_config("Loopback0", ipv6_loopback(router["name"], router["as"]))
+            cmds[router["name"]] += commands.address_config("Loopback0", ipv6_loopback(router["name"], router["as"]))
 
             as_routers.append({
                 "name": router["name"],
