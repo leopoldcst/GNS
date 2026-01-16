@@ -334,14 +334,3 @@ def enable_community(): # à faire sur tous les routeurs pour qu'ils comprennent
 
 
 
-
-
-def create_community_list(name, communities, deny=False):
-    # communities = ["100:10", "100:20"] etc.
-    conf = ["enable", "configure terminal"]
-    action = "deny" if deny else "permit"
-    for c in communities:
-        conf.append(f"ip community-list standard {name} {action} {c}")
-    conf += ["end", " "]
-    return conf
-
