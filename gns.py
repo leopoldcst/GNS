@@ -99,7 +99,7 @@ class GnsProject:
         ]
         
         link = Link(project_id=self.lab.project_id, connector=self.server, nodes=nodes)
-        link.create()
+        # link.create()
 
 
     def get_router_port(self, router_name):
@@ -119,15 +119,15 @@ class RouterSocket:
         self.name = name
         self.tn = telnetlib.Telnet(host, port)
         
-        self.tn.write(b"\r")
-        self.tn.write(b"\r")
-        self.tn.write(b"\r")
+        self.tn.write(b"\r\n")
+        self.tn.write(b"\r\n")
+        self.tn.write(b"\r\n")
         self.emptyChannel()
         
 
     def run(self, command):
         # print(f"-> {command}")
-        self.tn.write(command.encode("ascii")+b"\r")
+        self.tn.write(command.encode("ascii")+b"\r\n")
         time.sleep(0.03)
         self.emptyChannel()
 

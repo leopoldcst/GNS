@@ -37,9 +37,24 @@ def cmd_configure_interface(intent, name, interface, to, link_type):
 
         if link_type == "inter-as":
             # Implement BGP
+            to_as_nb = find_as(intent, to)
+            to_addr = ipv6_link_inter_as(name, as_nb, to, to_as_nb)[to]
+
+            cmd_list += commands.e_bgp_neighbor_config(as_nb, to_addr, to_as_nb)
+
             pass
 
         return cmd_list
+
+
+def write_configs(cmds):
+    for name, cmd in cmds.items():
+        print(f"\nRunning config for {name}")
+        # for c in cmd:
+        #     print(c)
+        g.routers[name].start()
+        g.run_on_router(name, cmd)
+
 
 
 if __name__ == "__main__":
@@ -80,22 +95,50 @@ if __name__ == "__main__":
 
 
         # Configure the interface for both routers of the link
-        cmds[name] += cmd_configure_interface(intent,
-                                                  link["from"],
-                                                  link["interface_from"],
-                                                  link["to"],
-                                                  link["type"])
+        cmds[link["from"]] += cmd_configure_interface(intent,
+                                                      link["from"],
+                                                      link["interface_from"],
+                                                      link["to"],
+                                                      link["type"])
 
-        cmds[name] += cmd_configure_interface(intent,
-                                                  link["to"],
-                                                  link["interface_to"],
-                                                  link["from"],
-                                                  link["type"])
+        cmds[link["to"]] += cmd_configure_interface(intent,
+                                                    link["to"],
+                                                    link["interface_to"],
+                                                    link["from"],
+                                                    link["type"])
 
-    for name, cmd in cmds.items():
-        print(f"Running config for {name}")
-        print(cmd)
-        g.routers[name].start()
-        g.run_on_router(name, cmd)
 
-    g.lab.arrange_nodes_circular()
+
+    ### Enable BGP on every router
+    for router in intent["routers"]:
+        cmds[router["name"]] += commands.bgp_config(router["name"][1:], router["as"])
+
+    ### iBGP config
+
+    # Find routers of the same as
+    # Construct a dictionnary with the router in the AS and their respective loopback address
+    for as_nb in intent["as"]:
+        as_routers_loopbacks = []
+
+        for router in intent["routers"]:
+            if router["as"] != as_nb:
+                continue
+
+            cmds[router["name"]] += address_config("Loopback0", ipv6_loopback(router["name"], router["as"]))
+
+            as_routers.append({
+                "name": router["name"],
+                "loopback": ipv6_loopback(router["name"], router["as"])
+            })
+
+        print(commands.whole_as_i_bgp_config(as_routers_loopbacks, as_nb))
+
+        for name, cmd in commands.whole_as_i_bgp_config(as_routers_loopbacks, as_nb).items():
+            cmds[name] += cmd
+
+
+    # cmds[router["name"]] += commands.ibgpConfig(x, as_nb)
+
+    write_configs(cmds)
+
+    # g.lab.arrange_nodes_circular()
