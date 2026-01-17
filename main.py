@@ -4,6 +4,8 @@ import multiprocessing
 import click
 from rich.console import Console
 console = Console()
+import ipaddress
+
 
 import gns
 import commands
@@ -21,10 +23,14 @@ def main(intentfile):
 
     cmds = {}
 
+    adress = {}
+
     ### Reading the intent file
     f = open(INTENT_PATH, "r", encoding="utf-8")
     intent = json.load(f)
     f.close()
+
+
 
 
     ### Project opening
@@ -33,6 +39,15 @@ def main(intentfile):
     g.create_new(auto_recover=True)
     g.open()
     console.log("Opened the project")
+
+## construction of a border router dictionnary
+
+    border_routers = set()
+    for link in intent["links"]:
+        if link["type"] == "inter-as":
+            border_routers.add(link["from"])
+            border_routers.add(link["to"])
+
 
 
     ### Router setup
@@ -62,13 +77,15 @@ def main(intentfile):
                                                     link["from"],
                                                     link["interface_from"],
                                                     link["to"],
-                                                    link["type"])
+                                                    link["type"],
+                                                    adress)
 
         cmds[link["to"]] += cmd_configure_interface(intent,
                                                     link["to"],
                                                     link["interface_to"],
                                                     link["from"],
-                                                    link["type"])
+                                                    link["type"],
+                                                    adress)
 
 
 
@@ -89,9 +106,15 @@ def main(intentfile):
                 continue
 
             ### Adding loopback address
-            cmds[router["name"]] += commands.loopback_config(ipv6_loopback(router["name"], as_nb),
+            ipv6_loopback_adress = ipv6_loopback(router["name"], as_nb)
+            cmds[router["name"]] += commands.loopback_config(ipv6_loopback_adress,
                                                              as_["internal_protocol"],
                                                              router["name"][1:])
+            
+            adress.setdefault(router["name"], {})
+            adress[router["name"]]["Loopback0"] = ipv6_loopback_adress
+            
+
 
             as_routers.append({
                 "name": router["name"],
@@ -104,14 +127,38 @@ def main(intentfile):
         for name, cmd in commands.whole_as_i_bgp_config(as_routers, as_nb).items():
             cmds[name] += cmd
 
+# border routers only
+        for router in as_routers:
+            name = router["name"]
+            if name not in border_routers:
+                continue
 
-    # cmds[router["name"]] += commands.ibgpConfig(x, as_nb)
+            neighbors = [
+                r["loopback"].split("/")[0]
+                for r in as_routers
+                if r["name"] != name
+            ]
+            cmds[name] += commands.next_hop_self(as_nb, neighbors)
+
+            protocol = as_["internal_protocol"]
+
+            if protocol.upper() == "OSPF":
+                process_id = int(name[1:])
+
+            else:
+                process_id = "RIP_AS"  # ou None si ta fonction a un defaut
+
+            cmds[name] += commands.redistribute_iBGP(as_nb, protocol, process_id)
+
+
 
 
     write_configs(cmds, g)
 
     if intent["arrangeInCircle"]:
         g.lab.arrange_nodes_circular()
+
+    ##console.print(adress)
     
     console.print("[b][blue]Finished![/b][/blue]")
 
@@ -128,15 +175,18 @@ def find_internal_protocol(intent, as_nb):
             return as_["internal_protocol"]
 
 
-def cmd_configure_interface(intent, name, interface, to, link_type):
+def cmd_configure_interface(intent, name, interface, to, link_type, adress):
     cmd_list = []
     as_nb = find_as(intent, name)
+
+    adress.setdefault(name, {})
 
     print(f"Configuring {interface} on {name}")
 
     
     if link_type == "intra-as":
         addr = ipv6_link_intra_as(name, to, as_nb)[name]
+        adress[name][interface] = addr
         cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
         # cmd_list += commands.address_config("Loopback0", ipv6_loopback(name, as_nb))
 
@@ -159,7 +209,12 @@ def cmd_configure_interface(intent, name, interface, to, link_type):
         to_addr = commands.ipv6_sans_masque(ipv6_link_inter_as(name, as_nb, to, to_as_nb)[to])
     
         addr = ipv6_link_inter_as(name, as_nb, to, to_as_nb)[name]
+        adress[name][interface] = addr
+
         cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
+
+        prefix = str(ipaddress.IPv6Interface(addr).network)
+        cmd_list += commands.bgp_advertise_network(as_nb, prefix)
 
         cmd_list += commands.e_bgp_neighbor_config(as_nb, to_addr, to_as_nb)
     
