@@ -36,7 +36,7 @@ def cmd_configure_interface(intent, name, interface, to, link_type):
         if protocol == "RIP":
             print(f"Enabling RIP")
             cmd_list += commands.rip_config(addr, interface, name)
-            cmd_list += commands.loopback_config(ipv6_loopback(name, as_nb), "RIP", "RIP_AS")
+            # cmd_list += commands.loopback_config(ipv6_loopback(name, as_nb), "RIP", "RIP_AS")
 
         elif protocol == "OSPF":
             print(f"Enabling OSPF")
@@ -74,6 +74,7 @@ def write_configs(cmds):
         #     print(c)
 
 def write_config_router(name, cmd):
+    cmd.append("end")
     g.routers[name].start()
     g.run_on_router(name, cmd)
 
