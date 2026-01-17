@@ -84,6 +84,16 @@ def bgp_config(router_id, as_nb):
         f"exit"
     ]
 
+def bgp_advertise_network(as_nb, prefix):
+    return [
+        f"router bgp {as_nb}",
+        "address-family ipv6 unicast",
+        f"network {prefix}",
+        "exit-address-family",
+        "exit",
+    ]
+
+
 
 def e_bgp_neighbor_config(as_nb, neighbor_ip, neighbor_as_nb):
     return [
@@ -155,6 +165,24 @@ def redistribute_iBGP(as_number, igp, process_id): ## à faire que sur les route
     ]
 
     return conf
+
+def next_hop_self(as_number, neighbors):
+    if isinstance(neighbors, str):
+        neighbors = [neighbors]
+
+    cmds = [
+        f"router bgp {as_number}",
+        "address-family ipv6 unicast",
+    ]
+    for ip in neighbors:
+        cmds.append(f"neighbor {ip} next-hop-self")
+
+    cmds += [
+        "exit-address-family",
+        "exit",
+    ]
+    return cmds
+
 
 
 # address_blocked_list = 
