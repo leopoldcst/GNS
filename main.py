@@ -3,6 +3,8 @@ import gns
 import commands
 from ip_utils import *
 
+import multiprocessing
+
 INTENT_PATH = "intent_projet.json"
 
 def find_as(intent, name):
@@ -27,16 +29,19 @@ def cmd_configure_interface(intent, name, interface, to, link_type):
     if link_type == "intra-as":
         addr = ipv6_link_intra_as(name, to, as_nb)[name]
         cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
+        # cmd_list += commands.address_config("Loopback0", ipv6_loopback(name, as_nb))
 
-        if find_internal_protocol(intent, as_nb) == "RIP":
+        protocol = find_internal_protocol(intent, as_nb)
+
+        if protocol == "RIP":
             print(f"Enabling RIP")
             cmd_list += commands.rip_config(addr, interface, name)
+            cmd_list += commands.loopback_config(ipv6_loopback(name, as_nb), "RIP", "RIP_AS")
 
-        elif find_internal_protocol(intent, as_nb) == "OSPF":
+        elif protocol == "OSPF":
             print(f"Enabling OSPF")
             cmd_list += commands.ospf_config(addr, interface, name, 0)
 
-            print(commands.ospf_config(addr, interface, name, 0))
 
     if link_type == "inter-as":
         # Implement BGP
@@ -54,12 +59,23 @@ def cmd_configure_interface(intent, name, interface, to, link_type):
 
 
 def write_configs(cmds):
+    processes = []
+
     for name, cmd in cmds.items():
-        print(f"\nRunning config for {name}")
+        print(f"Running config for {name}")
+
+        processes.append(multiprocessing.Process(target=write_config_router, args=(name, cmd)))
+        
+        processes[-1].start()
+
+    for i in range(len(cmds)):
+        processes[i].join()
         # for c in cmd:
         #     print(c)
-        g.routers[name].start()
-        g.run_on_router(name, cmd)
+
+def write_config_router(name, cmd):
+    g.routers[name].start()
+    g.run_on_router(name, cmd)
 
 
 
@@ -133,7 +149,10 @@ if __name__ == "__main__":
             if str(router["as"]) != str(as_nb):
                 continue
 
-            cmds[router["name"]] += commands.address_config("Loopback0", ipv6_loopback(router["name"], router["as"]))
+            ### Adding loopback address
+            cmds[router["name"]] += commands.loopback_config(ipv6_loopback(router["name"], as_nb),
+                                                             as_["internal_protocol"],
+                                                             router["name"][1:])
 
             as_routers.append({
                 "name": router["name"],
