@@ -1,86 +1,24 @@
 import json
+import multiprocessing
+
+import click
+from rich.console import Console
+console = Console()
+
 import gns
 import commands
 from ip_utils import *
 
-import multiprocessing
-
 INTENT_PATH = "intent_projet.json"
 
-def find_as(intent, name):
-    for router in intent["routers"]:
-        if router["name"] == name:
-            return router["as"]
+### CLI Arguments
+@click.command()
+# @click.option('--count', default=1, help='Number of greetings.')
+@click.argument('intentfile', type=click.Path(exists=True, readable=True), default="./intent_projet.json")
+def main(intentfile):
+    console.print("[b][blue]GNS configuring util[/b][/blue]")
+    console.print(f"Configuring [b]GNS[/b] from {intentfile}")
 
-
-def find_internal_protocol(intent, as_nb):
-    for as_ in intent["as"]:
-        if str(as_["nb"]) == str(as_nb):
-            return as_["internal_protocol"]
-
-
-def cmd_configure_interface(intent, name, interface, to, link_type):
-    cmd_list = []
-    as_nb = find_as(intent, name)
-
-    print(f"Configuring {interface} on {name}")
-
-    
-    if link_type == "intra-as":
-        addr = ipv6_link_intra_as(name, to, as_nb)[name]
-        cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
-        # cmd_list += commands.address_config("Loopback0", ipv6_loopback(name, as_nb))
-
-        protocol = find_internal_protocol(intent, as_nb)
-
-        if protocol == "RIP":
-            print(f"Enabling RIP")
-            cmd_list += commands.rip_config(addr, interface, name)
-            # cmd_list += commands.loopback_config(ipv6_loopback(name, as_nb), "RIP", "RIP_AS")
-
-        elif protocol == "OSPF":
-            print(f"Enabling OSPF")
-            cmd_list += commands.ospf_config(addr, interface, name, 0)
-
-
-    if link_type == "inter-as":
-        # Implement BGP
-        print(f"Enabling eBGP")
-        to_as_nb = find_as(intent, to)
-        to_addr = commands.ipv6_sans_masque(ipv6_link_inter_as(name, as_nb, to, to_as_nb)[to])
-    
-        addr = ipv6_link_inter_as(name, as_nb, to, to_as_nb)[name]
-        cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
-
-        cmd_list += commands.e_bgp_neighbor_config(as_nb, to_addr, to_as_nb)
-    
-
-    return cmd_list
-
-
-def write_configs(cmds):
-    processes = []
-
-    for name, cmd in cmds.items():
-        print(f"Running config for {name}")
-
-        processes.append(multiprocessing.Process(target=write_config_router, args=(name, cmd)))
-        
-        processes[-1].start()
-
-    for i in range(len(cmds)):
-        processes[i].join()
-        # for c in cmd:
-        #     print(c)
-
-def write_config_router(name, cmd):
-    cmd.append("end")
-    g.routers[name].start()
-    g.run_on_router(name, cmd)
-
-
-
-if __name__ == "__main__":
     cmds = {}
 
     ### Reading the intent file
@@ -90,11 +28,11 @@ if __name__ == "__main__":
 
 
     ### Project opening
-    print("Opening the project...")
+    console.log("Opening the project...")
     g = gns.GnsProject(name=intent["project_name"])
     g.create_new(auto_recover=True)
     g.open()
-    print("Opened the project")
+    console.log("Opened the project")
 
 
     ### Router setup
@@ -170,7 +108,92 @@ if __name__ == "__main__":
     # cmds[router["name"]] += commands.ibgpConfig(x, as_nb)
 
 
-    write_configs(cmds)
+    write_configs(cmds, g)
 
     if intent["arrangeInCircle"]:
         g.lab.arrange_nodes_circular()
+    
+    console.print("[b][blue]Finished![/b][/blue]")
+
+
+def find_as(intent, name):
+    for router in intent["routers"]:
+        if router["name"] == name:
+            return router["as"]
+
+
+def find_internal_protocol(intent, as_nb):
+    for as_ in intent["as"]:
+        if str(as_["nb"]) == str(as_nb):
+            return as_["internal_protocol"]
+
+
+def cmd_configure_interface(intent, name, interface, to, link_type):
+    cmd_list = []
+    as_nb = find_as(intent, name)
+
+    print(f"Configuring {interface} on {name}")
+
+    
+    if link_type == "intra-as":
+        addr = ipv6_link_intra_as(name, to, as_nb)[name]
+        cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
+        # cmd_list += commands.address_config("Loopback0", ipv6_loopback(name, as_nb))
+
+        protocol = find_internal_protocol(intent, as_nb)
+
+        if protocol == "RIP":
+            print(f"Enabling RIP")
+            cmd_list += commands.rip_config(addr, interface, name)
+            # cmd_list += commands.loopback_config(ipv6_loopback(name, as_nb), "RIP", "RIP_AS")
+
+        elif protocol == "OSPF":
+            print(f"Enabling OSPF")
+            cmd_list += commands.ospf_config(addr, interface, name, 0)
+
+
+    if link_type == "inter-as":
+        # Implement BGP
+        print(f"Enabling eBGP")
+        to_as_nb = find_as(intent, to)
+        to_addr = commands.ipv6_sans_masque(ipv6_link_inter_as(name, as_nb, to, to_as_nb)[to])
+    
+        addr = ipv6_link_inter_as(name, as_nb, to, to_as_nb)[name]
+        cmd_list += commands.address_config(interface, addr) # Up the interface and setting ip address
+
+        cmd_list += commands.e_bgp_neighbor_config(as_nb, to_addr, to_as_nb)
+    
+
+    return cmd_list
+
+
+def write_configs(cmds, g):
+    processes = []
+
+
+    with console.status("[bold green] Sending commands to routers") as status:
+        for name, cmd in cmds.items():
+            # print(f"Running config for {name}")
+            console.log(f"Sending to {name}")
+
+            processes.append(multiprocessing.Process(target=write_config_router, args=(name, cmd, g)))
+            
+            processes[-1].start()
+
+        for i in range(len(cmds)):
+            processes[i].join()
+            # for c in cmd:
+            #     print(c)
+
+    
+
+def write_config_router(name, cmd, g):
+    cmd.append("end")
+    g.routers[name].start()
+    g.run_on_router(name, cmd)
+
+    console.log(f"Finished config of [b][green]{name}[/b][/green]")
+
+
+if __name__ == "__main__":
+    main()

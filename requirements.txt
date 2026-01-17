@@ -1,2 +1,4 @@
 gns3fy
 telnetlib3
+rich
+click
