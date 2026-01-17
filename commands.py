@@ -3,25 +3,36 @@ def base_router_config(name):
         "enable",
         "configure terminal",
         f"hostname {name}",
-        "ipv6 unicast-routing",
-        "end"
+        "ipv6 unicast-routing"
     ]
 
 
 def address_config(interface, address):
     return [
-        "enable",
-        "configure terminal",
         f"interface {interface}",
         "ipv6 enable",
         f"ipv6 address {address}",
         "no shutdown",
-        "exit",
-        "end",
-        " " # on force le end à se faire
-    
+        "exit"
     ]
 
+def loopback_config(address, protocol, process):
+    cmds = address_config("Loopback0", address)[:-2]
+
+    if protocol == "OSPF":
+        cmds += [
+            f"ipv6 ospf {process} area 0",
+            "exit"
+        ]
+
+    elif protocol == "RIP":
+        process = "RIP_AS"
+        cmds += [
+            f"ipv6 RIP {process} enable",
+            "exit"
+        ]
+
+    return cmds
 
 def rip_config(address, interface, name):
     process_name = "RIP_AS"
@@ -29,15 +40,12 @@ def rip_config(address, interface, name):
     # conf += baseRouterConfig(name)
     # conf += addressConfig(interface,address)
     conf += [
-        "enable",
-        "configure terminal",
-        f"interface {interface}",
-        f"ipv6 router rip {process_name}",
-        "exit",
+        # f"ipv6 router rip {process_name}",
+        # f"interface {interface}",
+        # "exit",
         f"interface {interface}",
         f"ipv6 rip {process_name} enable",
-        "end",
-        " "
+        "exit"
     ]
 
     return conf
@@ -50,16 +58,12 @@ def ospf_config(address, interface, name, area_nb):
     # conf += addressConfig(interface,address)
 
     conf += [
-        "enable",
-        "configure terminal",
         f"ipv6 router ospf {process_id}",
-        f" router-id {process_id}.{process_id}.{process_id}.{process_id}",
+        f"router-id {process_id}.{process_id}.{process_id}.{process_id}",
         "exit",
         f"interface {interface}",
-        f" ipv6 ospf {process_id} area {area_nb}",
-        "exit",
-        "end",
-        " "
+        f"ipv6 ospf {process_id} area {area_nb}",
+        "exit"
     ]
 
     return conf
@@ -74,64 +78,21 @@ def ipv6_sans_masque(ipv6):
 
 def bgp_config(router_id, as_nb):
     return [
-        f"configure terminal",
         f"router bgp {as_nb}", # Enters BGP configuration
         f"bgp router-id {router_id}.{router_id}.{router_id}.{router_id}",
         f"no bgp default ipv4-unicast",
-        f"end"]
-
-def ebgpConfig(address1, 
-               interface1,
-               name1,
-               as1, 
-               address2, 
-               interface2,
-               name2,
-               as2):
-    
-    neighbor_R1 = ipv6_sans_masque(address2)
-    neighbor_R2 = ipv6_sans_masque(address1)
-
-    commandes_1 = [
-        "configure terminal",
-        f"router bgp {as1}",
-        f"bgp router-id {as1}.{as1}.{as1}.{as1}",
-        "no bgp default ipv4-unicast",
-        f"neighbor {neighbor_R1} remote-as {as2}",
-        "address-family ipv6 unicast",
-        f"neighbor {neighbor_R1} activate",
-        "exit-address-family",
-        "end"
+        f"exit"
     ]
-
-    # =========================
-    # Commandes R2
-    # =========================
-    commandes_2 = [
-
-        "configure terminal",
-        f"router bgp {as2}",
-        f"bgp router-id {as2}.{as2}.{as2}.{as2}",
-        "no bgp default ipv4-unicast",
-        f"neighbor {neighbor_R2} remote-as {as1}",
-        "address-family ipv6 unicast",
-        f"neighbor {neighbor_R2} activate",
-        "exit-address-family",
-        "end"
-    ]
-
-    return commandes_1, commandes_2
 
 
 def e_bgp_neighbor_config(as_nb, neighbor_ip, neighbor_as_nb):
     return [
-        f"configure terminal",
         f"router bgp {as_nb}", # Enters BGP configuration
         f"neighbor {neighbor_ip} remote-as {neighbor_as_nb}", # Enters neighbor config
         f"address-family ipv6 unicast",
         f"neighbor {neighbor_ip} activate",
         f"exit-address-family", ### !!! Maybe is useless because of the end command
-        f"end"]
+        f"exit"]
 
 
 def whole_as_i_bgp_config(routers, as_nb, local_loopback_name="Loopback0"):
@@ -142,8 +103,6 @@ def whole_as_i_bgp_config(routers, as_nb, local_loopback_name="Loopback0"):
         router_id = int(name[1:])
 
         cmds = [
-            "enable",
-            "configure terminal",
             f"router bgp {as_nb}",
         ]
 
@@ -162,7 +121,7 @@ def whole_as_i_bgp_config(routers, as_nb, local_loopback_name="Loopback0"):
             ]
 
         cmds += [
-            "end"
+            "exit"
         ]
 
         all_cmds[name] = cmds
@@ -175,8 +134,6 @@ def redistribute_iBGP(as_number, igp, process_id): ## à faire que sur les route
     """
 
     conf = [
-        "enable",
-        "configure terminal",
         f"router bgp {as_number}",
         "address-family ipv6 unicast"
     ]
@@ -194,8 +151,7 @@ def redistribute_iBGP(as_number, igp, process_id): ## à faire que sur les route
 
     conf += [
         "exit-address-family",
-        "end",
-        " "
+        "exit"
     ]
 
     return conf
