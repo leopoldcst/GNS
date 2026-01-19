@@ -19,13 +19,13 @@ def address_config(interface, address):
 def loopback_config(address, protocol, process):
     cmds = address_config("Loopback0", address)[:-2]
 
-    if protocol == "OSPF":
+    if protocol == "ospf":
         cmds += [
             f"ipv6 ospf {process} area 0",
             "exit"
         ]
 
-    elif protocol == "RIP":
+    elif protocol == "rip":
         process = "RIP_AS"
         cmds += [
             f"ipv6 RIP {process} enable",
@@ -71,10 +71,18 @@ def ospf_config(address, interface, name, area_nb):
 
    #"redistribute connected" à activer si on veut partager tous les sous reseaux auxquels on appartient, ce qui n'est pas le cas tout le temps :)
 
-def ipv6_sans_masque(ipv6):
-    """Supprime le /64 si présent (obligatoire pour BGP neighbor)"""
-    return ipv6.split("/")[0]
 
+def enter_bgp_config(asn):
+    return [ f"router bgp {asn}" ]
+
+def i_bgp_neighbor(other_ip, asn, loopback_interface_name):
+    return [
+        f"neighbor {other_ip} remote-as {asn}",
+        f"neighbor {other_ip} update-source {loopback_interface_name}",
+        f"address-family ipv6 unicast",
+        f"neighbor {other_ip} activate",
+        "exit-address-family",
+    ]
 
 def bgp_config(router_id, as_nb):
     return [
@@ -95,38 +103,6 @@ def e_bgp_neighbor_config(as_nb, neighbor_ip, neighbor_as_nb):
         f"exit"]
 
 
-def whole_as_i_bgp_config(routers, as_nb, local_loopback_name="Loopback0"):
-    all_cmds = {}
-
-    for router in routers:
-        name = router["name"]
-        router_id = int(name[1:])
-
-        cmds = [
-            f"router bgp {as_nb}",
-        ]
-
-        # Add all the other routers of the AS to the iBGP config on our router
-        for other in routers:
-            if other["name"] == name:
-                continue
-
-            other_ip = other["loopback"].split("/")[0]
-            cmds += [
-                f"neighbor {other_ip} remote-as {as_nb}",
-                f"neighbor {other_ip} update-source {local_loopback_name}",
-                f"address-family ipv6 unicast",
-                f"neighbor {other_ip} activate",
-                "exit-address-family",
-            ]
-
-        cmds += [
-            "exit"
-        ]
-
-        all_cmds[name] = cmds
-
-    return all_cmds
 
 def redistribute_iBGP(as_number, igp, process_id): ## à faire que sur les routeurs de bordure pour annoncer les routes à BGP
     """

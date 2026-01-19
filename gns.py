@@ -5,7 +5,6 @@
 
 
 from gns3fy import gns3fy, Project, Node, Link
-import telnetlib3.telnetlib as telnetlib
 
 import datetime
 import time
@@ -105,40 +104,7 @@ class GnsProject:
     def get_router_port(self, router_name):
         return self.routers[router_name].console
 
-    def run_on_router(self, name, commands):
-        routerSocket = RouterSocket(name, port=self.get_router_port(name))
 
-        for cmd in commands:
-            routerSocket.run(cmd)
-
-        routerSocket.close()
-
-
-class RouterSocket:
-    def __init__(self, name, host="localhost", port=0) -> None:
-        self.name = name
-        self.tn = telnetlib.Telnet(host, port)
-        
-        self.tn.write(b"\r\n")
-        self.tn.write(b"\r\n")
-        self.tn.write(b"\r\n")
-        self.emptyChannel()
-        
-
-    def run(self, command):
-        # print(f"-> {command}")
-        self.tn.write(command.encode("ascii")+b"\r\n")
-        time.sleep(0.03)
-        self.emptyChannel()
-
-
-    def close(self):
-        self.tn.close()
-
-    def emptyChannel(self):
-        while self.tn.read_very_eager() != b"":
-            # self.tn.write(b"\r")
-            pass
         
 
 
