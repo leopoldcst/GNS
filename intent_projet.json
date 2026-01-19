@@ -187,19 +187,26 @@
     }
   ],
 
-  "asRelationships" : 
-  [
+  "clientProviderRelationships" : [
     {
-      "fromAs" : 1,
-      "toAs" : 2,
-      "type" : "client-to-provider" 
+      "client": 1,
+      "provider": 2
     }
   ],
+
 
   "valueCommunity":
   {
     "client" : 42,
     "peer" : 69,
     "provider" : 21
-  }
+  },
+
+  "localPref":
+    {
+    "client" : 300,
+    "peer" : 200,
+    "provider" : 100
+    }
+
 }

@@ -128,7 +128,7 @@ class RouterSocket:
     def run(self, command):
         # print(f"-> {command}")
         self.tn.write(command.encode("ascii")+b"\r\n")
-        time.sleep(0.03)
+        time.sleep(0.1)
         self.emptyChannel()
 
 
