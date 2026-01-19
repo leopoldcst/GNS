@@ -41,7 +41,7 @@ class GnsProject:
         self.lab.close()
 
 
-    def create_router(self, name="Router", model="c7200", auto_recover=False, x,y):
+    def create_router(self, name="Router", model="c7200", auto_recover=False, x=0, y=0):
         if auto_recover:
             for node in self.lab.nodes:
                 if node.name == name:
