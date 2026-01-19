@@ -10,6 +10,8 @@ import ipaddress
 import gns
 import commands
 from ip_utils import *
+from display import router_coords_from_intent
+
 
 INTENT_PATH = "intent_projet.json"
 
@@ -51,17 +53,21 @@ def main(intentfile):
 
 
     ### Router setup
+    router_positions = router_coords_from_intent(
+        intent,
+        as_radius=400,
+        router_radius=80,
+        center=(0, 0),
+    )
+
     if intent["createRouters"]:
         for router in intent["routers"]:
             name = router["name"]
 
             print(f"Creating router {name}")
-            if find_as(intent, name) == 1:
-                g.create_router(name=name, auto_recover=True, x=0, y=0)
-            elif find_as(intent, name) == 2:
-                g.create_router(name=name, auto_recover=True, x=100, y=0)
-            else:
-                g.create_router(name=name, auto_recover=True, x=200, y=0)
+            pos = router_positions.get(name, {"x": 0, "y": 0})
+            g.create_router(name=name, auto_recover=True, x=pos["x"], y=pos["y"])
+
 
 
             print("Configuring the router")
