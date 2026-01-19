@@ -56,7 +56,13 @@ def main(intentfile):
             name = router["name"]
 
             print(f"Creating router {name}")
-            g.create_router(name=name, auto_recover=True)
+            if find_as(intent, name) == 1:
+                g.create_router(name=name, auto_recover=True, x=0, y=0)
+            elif find_as(intent, name) == 2:
+                g.create_router(name=name, auto_recover=True, x=100, y=0)
+            else:
+                g.create_router(name=name, auto_recover=True, x=200, y=0)
+
 
             print("Configuring the router")
             cmds[name] = commands.base_router_config(name)
