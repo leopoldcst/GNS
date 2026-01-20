@@ -75,14 +75,22 @@ def ospf_config(address, interface, name, area_nb):
 def enter_bgp_config(asn):
     return [ f"router bgp {asn}" ]
 
-def i_bgp_neighbor(other_ip, asn, loopback_interface_name):
-    return [
+
+def i_bgp_neighbor(other_ip, asn, loopback_interface_name, next_hope_self=False):
+    cmds = [
         f"neighbor {other_ip} remote-as {asn}",
         f"neighbor {other_ip} update-source {loopback_interface_name}",
         f"address-family ipv6 unicast",
         f"neighbor {other_ip} activate",
-        "exit-address-family",
-    ]
+        f"neighbor {other_ip} send-community both"]
+    
+    if next_hop_self:
+        cmds.append(f"neighbor {other_ip} next-hop-self")
+
+    cmds += ["exit-address-family"]
+
+    return cmds
+
 
 def bgp_config(router_id, as_nb):
     return [
@@ -91,6 +99,16 @@ def bgp_config(router_id, as_nb):
         f"no bgp default ipv4-unicast",
         f"exit"
     ]
+
+def bgp_advertise_network(as_nb, prefix):
+    return [
+        f"router bgp {as_nb}",
+        "address-family ipv6 unicast",
+        f"network {prefix}",
+        "exit-address-family",
+        "exit",
+    ]
+
 
 
 def e_bgp_neighbor_config(as_nb, neighbor_ip, neighbor_as_nb):
@@ -104,33 +122,38 @@ def e_bgp_neighbor_config(as_nb, neighbor_ip, neighbor_as_nb):
 
 
 
-def redistribute_iBGP(as_number, igp, process_id): ## à faire que sur les routeurs de bordure pour annoncer les routes à BGP
+def redistribute_iBGP(as_number, protocol, process_id): ## à faire que sur les routeurs de bordure pour annoncer les routes à BGP
     """
     Redistribue un IGP (OSPF ou RIP) dans BGP 
     """
+    protocol = protocol.lower()
 
-    conf = [
+    return [
         f"router bgp {as_number}",
-        "address-family ipv6 unicast"
-    ]
-
-    igp = igp.lower()
-
-    if igp == "ospf":
-        conf.append(f"redistribute ospf {process_id}")
-
-    elif igp == "rip":
-        conf.append(f"redistribute rip {process_id}")
-
-    else:
-        raise ValueError("IGP non supporté : utiliser 'ospf' ou 'rip'")
-
-    conf += [
+        "address-family ipv6 unicast",
+        f"redistribute {protocol} {process_id}",
         "exit-address-family",
         "exit"
     ]
 
-    return conf
+
+def next_hop_self(as_number, neighbors):
+    if isinstance(neighbors, str):
+        neighbors = [neighbors]
+
+    cmds = [
+        f"router bgp {as_number}",
+        "address-family ipv6 unicast",
+    ]
+    for ip in neighbors:
+        cmds.append(f"neighbor {ip} next-hop-self")
+
+    cmds += [
+        "exit-address-family",
+        "exit",
+    ]
+    return cmds
+
 
 
 # address_blocked_list = 
@@ -180,11 +203,8 @@ def create_access_list(address_blocked_list, name_acl, deny):     #deny = true =
 
 #     return conf
 
-def create_route_map(map_tag, sequence_number=10, name_acl=None, deny=False, community=None):
-    conf = [
-        "enable",
-        "configure terminal"
-    ]
+def create_route_map(map_tag, sequence_number=10, name_acl=None, deny=False, community=None, community_list=None):
+    conf = []
 
     action = "deny" if deny else "permit"
 
@@ -199,11 +219,13 @@ def create_route_map(map_tag, sequence_number=10, name_acl=None, deny=False, com
                 "Impossible de définir une community dans une route-map deny")
         conf.append(f"set community {community}")
 
+    if community_list:
+        conf.append(f"match community {community_list}")
+
     conf.append(f"route-map {map_tag} permit {sequence_number + 10}")
 
     conf += [
-        "end",
-        " "
+        "exit"
     ]
 
     return conf
@@ -212,8 +234,6 @@ def create_route_map(map_tag, sequence_number=10, name_acl=None, deny=False, com
 def apply_route_map(address, map_tag, as_number, entry=True):
     conf = []
     conf += [
-        "enable",
-        "configure terminal",
         f"router bgp {as_number}",
         "address-family ipv6 unicast"
              ]
@@ -222,31 +242,32 @@ def apply_route_map(address, map_tag, as_number, entry=True):
     else:
         conf.append(f"neighbor {address} route-map {map_tag} out")
 
-    conf.append("end")
-    conf.append("")
+    conf.append("exit")
+    conf.append("exit")
     return conf
 
 
 def enable_community(): # à faire sur tous les routeurs pour qu'ils comprennent quand on fait  f" set community {community}"
-    return [
-        "enable",
-        "configure terminal",
-        "ip bgp-community new-format",
-        "end",
-        " "
-    ]
+    return [ "ip bgp-community new-format" ]
 
 def create_community_list(name, community, permit=True):
-
     action = "permit" if permit else "deny"
 
     return [
-        "enable",
-        "configure terminal",
-        f"ip community-list standard {name} {action} {community}",
-        " "
+        f"ip community-list standard {name} {action} {community}"
     ]
 
+
+def send_community(as_nb, neighbor_addr):
+    return [
+        f"router bgp {as_nb}",
+        "address-family ipv6 unicast",
+        f"neighbor {neighbor_addr} send-community both",
+        "exit-address-family",
+        "exit",
+    ]
+
+       
 
 #################################################################
 #Comment initialiser une community et appliquer une règle dessus#

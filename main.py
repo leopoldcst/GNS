@@ -1,15 +1,23 @@
+### Native libraries
 import json
 import multiprocessing
 import typing
+import ipaddress
+import time
 
+### Added libraries
 import click
+from rich.pretty import pprint
 
+### Own libraries
 import gns
 import commands
 from ip_utils import *
 import log
 from log import console
 from utils import *
+from display import router_coords_from_intent
+
 
 
 ### CLI Arguments
@@ -21,6 +29,7 @@ def main(intentfile):
     console.print(f"Intent file is [b]{intentfile}[/b]")
 
     cmds = {}
+    adress = {}
 
     ### Reading the intent file
     intents = read_intents(intentfile)
@@ -37,6 +46,7 @@ def main(intentfile):
     if use_gnsfy:
         g = open_gns(gns_config)
 
+
     ##### Creating data structures
     ### ASs
     as_list: dict[int, AS] = {}
@@ -45,6 +55,20 @@ def main(intentfile):
         internal_protocol = as_data["internal_protocol"].lower()
 
         as_list[asn] = AS(asn, internal_protocol)
+    
+    # Relationships with other ASs
+    for rel in intents.get("client_provider_relationships", []):
+        as_list[rel["client"]].relationships.append(Relationship("client", as_list[rel["provider"]]))
+        as_list[rel["provider"]].relationships.append(Relationship("provider", as_list[rel["client"]]))
+
+    for rel in intents.get("peer_to_peer", []):
+        as_list[rel["peer_1"]].relationships.append(Relationship("peer", as_list[rel["peer_2"]]))
+        as_list[rel["peer_2"]].relationships.append(Relationship("peer", as_list[rel["peer_1"]]))
+
+    for a_s in as_list.values():
+        for rel in a_s.relationships:
+            pprint(f"{a_s.asn} is {rel.type} with/of {rel.other.asn}")
+
 
     ### Routers
     routers: dict[str, Router] = {}
@@ -61,8 +85,20 @@ def main(intentfile):
         if use_gnsfy and gns_config["create_routers"]:
             try:
                 log.info(f"Creating/recovering router {name} (GNS)")
+                
+                router_positions = router_coords_from_intent(
+                    intents,
+                    as_radius=400,
+                    router_radius=80,
+                    center=(0, 0),
+                )
+
+                pos = router_positions.get(name, {"x": 0, "y": 0})
+
                 g.create_router(name=name, auto_recover=True) # Creating/recovering router in GNS
+                # g.create_router(name=name, auto_recover=True, x=pos["x"], y=pos["y"]) # Creating/recovering router in GNS
             except Exception as exp:
+                console.print_exception()
                 log.fatal_error("Failed to create/recover the router {name} (GNS)", exp)
 
             if gns_config["auto_fetch_router_infos"]:
@@ -80,7 +116,8 @@ def main(intentfile):
 
         # Basic router config
         routers[name].append_cmds(commands.base_router_config(name))
-        
+        routers[name].append_cmds(commands.enable_community()) # Mandatory for communities
+    
 
     ### Link and protocol setup
     for link in intents["links"]:
@@ -109,19 +146,20 @@ def main(intentfile):
 
     ##### iBGP config
     for asn, a_s in as_list.items():
+        ### Adding loopback address
         # We first need to enable the loopback interface on all the routers before configuring iBGP
         for name, r in a_s.routers.items():
             loopback_addr = compute_loopback_address(name, asn)
 
-            ### Adding loopback address
             r.interfaces["Loopback0"].append(loopback_addr)
             r.append_cmds(commands.loopback_config(
                 loopback_addr,
                 a_s.internal_protocol,
                 r.id))
 
+
+        ### Full mesh iBGP sessions
         for name, r in a_s.routers.items():
-            ### Full mesh iBGP sessions
             r.append_cmds(commands.enter_bgp_config(asn))
 
             for name_other, r_other in a_s.routers.items():
@@ -130,9 +168,38 @@ def main(intentfile):
 
                 other_ip_without_mask = remove_ipv6_mask(r_other.interfaces["Loopback0"][0])
 
-                r.append_cmds(commands.i_bgp_neighbor(other_ip_without_mask, asn, "Loopback0"))
+                r.append_cmds(commands.i_bgp_neighbor(
+                    other_ip_without_mask,
+                    asn,
+                    "Loopback0",
+                    # Next hop self is necessary for the internal routers to
+                    # know where to route their packets going outside the AS
+                    next_hope_self=r.is_border
+                ))
 
             r.append_cmd("exit")
+
+            ### Targetting only border router for community tagging
+            if not r.is_border:
+                continue
+
+            if a_s.internal_protocol == "ospf":
+                process_id = r.id
+            else:
+                process_id = "RIP_AS"
+
+            r.append_cmds(commands.redistribute_iBGP(asn, a_s.internal_protocol, process_id))
+
+
+
+        ### Route tagging
+        # rel means a relationship
+        for rel in a_s.relationships:
+            for link in rel.links:
+                tag_community(intents, asn, link, rel.type)
+            
+        ### appliquer les conditions en fonction de la relation entre les AS
+        apply_community_conditions(a_s)
 
 
     ### Start all router on GNS
@@ -143,8 +210,84 @@ def main(intentfile):
 
         log.success("Started routers (GNS)")
 
+    with console.status("[blue] Waiting 10s for routers to start") as status:
+        time.sleep(10)
+
 
     ### Telnet sending
+    write_configs(routers)
+
+    if use_gnsfy and gns_config["arrange_in_circle"]:
+        g.lab.arrange_nodes_circular()
+    
+    console.print("\n[b][green]Finished![/b][/green]")
+
+
+
+
+##########
+# Presque fini tag_community, sauf qu'il peut y avoir plusieurs liens entre deux mêmes AS, donc
+# dans la class Relationship il faut que other_router et border_router soit des listes
+
+# Peut-être faire des paire de border-other router dans la class Relationship
+
+
+
+def tag_community(intents, asn: int, link: RelationshipLink, type: str):
+    r = link.from_r
+    constants = intents["community_constants"][type]
+
+    # Value community is constructed with {asn}:{key}, the key depends on the type of relationship with the other AS
+    value_community = f"{asn}:{constants["value_suffix"]}"
+
+    r.append_cmds(commands.create_route_map(constants["route_map_tag"], community=value_community))
+
+    ### Aplying the route map for the routes incoming
+    neighbor_ip_without_mask = remove_ipv6_mask(link.to_ip)
+
+    r.append_cmds(commands.apply_route_map(
+        neighbor_ip_without_mask,
+        constants["route_map_tag"],
+        asn,
+        True ### Need to verify
+    ))
+
+    r.append_cmds(commands.create_community_list(constants["community_list_name"], value_community))
+
+
+
+def apply_community_conditions(a_s: AS):
+    block_list = []
+
+    # If AS is client add PROVIDER to block list
+    # If AS is peer to peer add PEER to block list
+    for rel in a_s.relationships:
+        if rel.type == "client" and "PROVIDER" not in block_list:
+            block_list.append("PROVIDER")
+        elif rel.type == "peer" and "PEER" not in block_list:
+            block_list.append("PEER")
+
+    for r in a_s.routers.values():
+        if not r.is_border:
+            continue
+
+        if block_list:
+            r.append_cmds(commands.create_route_map(
+                "BLOCK_UPSTREAM",
+                deny=True,
+                community_list=" ".join(block_list),
+            ))
+
+        ### Find other AS router ip
+
+        rel, link = a_s.get_relationship_from(r)
+
+        if rel.type in ("provider", "peer") and block_list:
+            r.append_cmds(commands.apply_route_map(link.to_ip, "BLOCK_UPSTREAM", a_s.asn, entry=False))
+
+
+
+def write_configs(routers):
     processes = []
 
     with console.status("[blue] Sending commands to routers") as status:
@@ -158,10 +301,6 @@ def main(intentfile):
             processes[i].join()
 
 
-    if use_gnsfy and gns_config["arrange_in_circle"]:
-        g.lab.arrange_nodes_circular()
-    
-    console.print("\n[b][green]Finished![/b][/green]")
 
 
 def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b: str, link_type: str):
@@ -196,11 +335,44 @@ def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b
     # if link_type == "inter-as":
         log.info(f"Enabling eBGP")
 
+        r_a.is_border = True
+        r_b.is_border = True
+
         addr_a_without_mask = remove_ipv6_mask(addr_a)
         addr_b_without_mask = remove_ipv6_mask(addr_b)
+        
+        prefix_a = str(ipaddress.IPv6Interface(addr_a).network) ### !!! Refactor this part
+        prefix_b = str(ipaddress.IPv6Interface(addr_b).network)
+
+        r_a.append_cmds(commands.bgp_advertise_network(r_a.asn, prefix_a))
+        r_b.append_cmds(commands.bgp_advertise_network(r_b.asn, prefix_b))
 
         r_a.append_cmds(commands.e_bgp_neighbor_config(r_a.asn, addr_b_without_mask, r_b.asn))
         r_b.append_cmds(commands.e_bgp_neighbor_config(r_b.asn, addr_a_without_mask, r_a.asn))
+
+        r_a.append_cmds(commands.send_community(r_a.asn, addr_b_without_mask))
+        r_b.append_cmds(commands.send_community(r_b.asn, addr_a_without_mask))
+
+        ### Find the corresponding relationship for this inter-as link
+        # Loops through the relationship to see which one has the router
+        # And then add the router to the relationship class to find it more easily after
+        for rel in r_a.a_s.relationships:
+            if rel.other.routers.get(r_b.name) is not None: # The other AS has the other router so it is the AS correponsing with the relationship
+                rel.links.append(RelationshipLink(
+                    r_a,
+                    addr_a,
+                    r_b,
+                    addr_b
+                ))
+        
+        for rel in r_b.a_s.relationships:
+            if rel.other.routers.get(r_a.name) is not None:
+                rel.links.append(RelationshipLink(
+                    r_b,
+                    addr_b,
+                    r_a,
+                    addr_a
+                ))
 
 
 def read_intents(path) -> dict[str, typing.Any] :

@@ -30,7 +30,7 @@ class RouterSocket:
         # print(f"-> {command}")
         self.tn.write(command.encode("ascii")+b"\r\n")
         time.sleep(INTERVAL_BETWEEN_CMD)
-        self.emptyChannel()
+        # self.emptyChannel()
 
 
     def close(self):

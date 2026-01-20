@@ -1,5 +1,6 @@
 from __future__ import annotations
 from enum import Enum
+import typing
 
 import log
 import telnet
@@ -11,6 +12,8 @@ class Router:
         self.a_s: AS = a_s
         self.host: str = host
         self.port: str = port
+
+        self.is_border: bool = False
 
         self.interfaces: dict[str, list[str]] = {
             "Loopback0":[],
@@ -42,14 +45,32 @@ class Router:
         log.success(f"Finished config of [b]{self.name}[/]")
 
 
-
-class Interface:
-    def __init__(self):
-        pass
-
 class AS:
     def __init__(self, asn: int, internal_protocol: str):
         self.asn: int = asn
         self.internal_protocol: str = internal_protocol
         
         self.routers: dict[str, Router] = {}
+
+        self.relationships: list[Relationship] = []
+
+    def get_relationship_from(self, r: Router) -> tuple[Relationship, RelationshipLink]:
+        for rel in self.relationships:
+            for link in rel.links:
+                if link.from_r == r:
+                    return rel, link
+
+        raise Exception()
+
+class Relationship:
+    def __init__(self, type: str, other: AS) -> None:
+        self.type: str = type # If provider it means that self is a provider of the client other
+        self.other: AS = other
+        self.links: list[RelationshipLink] = []
+
+class RelationshipLink:
+    def __init__(self, from_r: Router, from_ip: str, to_r: Router, to_ip: str) -> None:
+        self.from_r: Router = from_r
+        self.from_ip: str = from_ip
+        self.to_r: Router = to_r
+        self.to_ip: str = to_ip
