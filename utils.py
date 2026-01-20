@@ -54,13 +54,15 @@ class AS:
 
         self.relationships: list[Relationship] = []
 
-    def get_relationship_from(self, r: Router) -> tuple[Relationship, RelationshipLink]:
+    def get_relationships_from(self, r: Router) -> list[tuple[Relationship, RelationshipLink]]:
+        l: list[tuple[Relationship, RelationshipLink]] =[]
+
         for rel in self.relationships:
             for link in rel.links:
                 if link.from_r == r:
-                    return rel, link
+                    l.append((rel, link))
 
-        raise Exception()
+        return l
 
 class Relationship:
     def __init__(self, type: str, other: AS) -> None:

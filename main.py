@@ -233,7 +233,11 @@ def tag_community(intents, asn: int, link: RelationshipLink, type: str):
     # Value community is constructed with {asn}:{key}, the key depends on the type of relationship with the other AS
     value_community = f"{asn}:{constants["value_suffix"]}"
 
-    r.append_cmds(commands.create_route_map(constants["route_map_tag"], community=value_community))
+    r.append_cmds(commands.create_route_map(
+        constants["route_map_tag"],
+        community=value_community,
+        local_pref=constants["local_pref"]
+    ))
 
     ### Aplying the route map for the routes incoming
     neighbor_ip_without_mask = remove_ipv6_mask(link.to_ip)
@@ -273,10 +277,9 @@ def apply_community_conditions(a_s: AS):
 
         ### Find other AS router ip
 
-        rel, link = a_s.get_relationship_from(r)
-
-        if rel.type in ("provider", "peer") and block_list:
-            r.append_cmds(commands.apply_route_map(link.to_ip, "BLOCK_UPSTREAM", a_s.asn, entry=False))
+        for rel, link in a_s.get_relationships_from(r):
+            if rel.type in ("client", "peer") and block_list:
+                r.append_cmds(commands.apply_route_map(remove_ipv6_mask(link.to_ip), "BLOCK_UPSTREAM", a_s.asn, entry=False))
 
 
 

@@ -203,7 +203,7 @@ def create_access_list(address_blocked_list, name_acl, deny):     #deny = true =
 
 #     return conf
 
-def create_route_map(map_tag, sequence_number=10, name_acl=None, deny=False, community=None, community_list=None):
+def create_route_map(map_tag, sequence_number=10, name_acl=None, deny=False, community=None, community_list=None, local_pref=None):
     conf = []
 
     action = "deny" if deny else "permit"
@@ -221,6 +221,9 @@ def create_route_map(map_tag, sequence_number=10, name_acl=None, deny=False, com
 
     if community_list:
         conf.append(f"match community {community_list}")
+    
+    if local_pref:
+        conf.append(f"set local-preference {local_pref}")
 
     conf.append(f"route-map {map_tag} permit {sequence_number + 10}")
 
