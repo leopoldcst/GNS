@@ -190,8 +190,6 @@ def main(intentfile):
 
             r.append_cmds(commands.redistribute_iBGP(asn, a_s.internal_protocol, process_id))
 
-
-
         ### Route tagging
         # rel means a relationship
         for rel in a_s.relationships:
@@ -221,15 +219,6 @@ def main(intentfile):
         g.lab.arrange_nodes_circular()
     
     console.print("\n[b][green]Finished![/b][/green]")
-
-
-
-
-##########
-# Presque fini tag_community, sauf qu'il peut y avoir plusieurs liens entre deux mêmes AS, donc
-# dans la class Relationship il faut que other_router et border_router soit des listes
-
-# Peut-être faire des paire de border-other router dans la class Relationship
 
 
 
@@ -299,7 +288,6 @@ def write_configs(routers):
 
         for i in range(len(processes)):
             processes[i].join()
-
 
 
 
@@ -375,6 +363,7 @@ def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b
                 ))
 
 
+
 def read_intents(path) -> dict[str, typing.Any] :
     try:
         log.info("Reading the intent file...")
@@ -388,6 +377,7 @@ def read_intents(path) -> dict[str, typing.Any] :
         log.fatal_error("Failed to read the intent file", exp)
         
     return intents
+
 
 
 def open_gns(gns_config):
@@ -404,6 +394,7 @@ def open_gns(gns_config):
         log.fatal_error("Failed to connect to the GNS server", exp)
 
     return g
+
 
 
 if __name__ == "__main__":
