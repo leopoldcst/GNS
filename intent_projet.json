@@ -41,155 +41,132 @@
       "from": "R1",
       "to": "R2",
       "interface_from": "g1/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R1",
       "to": "R3",
       "interface_from": "g2/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R2",
       "to": "R3",
       "interface_from": "g2/0",
-      "interface_to": "g2/0",
-      "type": "intra-as"
+      "interface_to": "g2/0"
     },
     {
       "from": "R2",
       "to": "R4",
       "interface_from": "g3/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R3",
       "to": "R5",
       "interface_from": "g3/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R4",
       "to": "R5",
       "interface_from": "g2/0",
-      "interface_to": "g2/0",
-      "type": "intra-as"
+      "interface_to": "g2/0"
     },
     {
       "from": "R4",
       "to": "R6",
       "interface_from": "g3/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R4",
       "to": "R7",
       "interface_from": "g4/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R5",
       "to": "R6",
       "interface_from": "g3/0",
-      "interface_to": "g2/0",
-      "type": "intra-as"
+      "interface_to": "g2/0"
     },
     {
       "from": "R5",
       "to": "R7",
       "interface_from": "g4/0",
-      "interface_to": "g2/0",
-      "type": "intra-as"
+      "interface_to": "g2/0"
     },
     {
       "from": "R6",
       "to": "R8",
       "interface_from": "g3/0",
-      "interface_to": "g3/0",
-      "type": "inter-as"
+      "interface_to": "g3/0"
     },
     {
       "from": "R7",
       "to": "R9",
       "interface_from": "g3/0",
-      "interface_to": "g3/0",
-      "type": "inter-as"
+      "interface_to": "g3/0"
     },
     {
       "from": "R14",
       "to": "R12",
       "interface_from": "g1/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R14",
       "to": "R13",
       "interface_from": "g2/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R12",
       "to": "R13",
       "interface_from": "g2/0",
-      "interface_to": "g2/0",
-      "type": "intra-as"
+      "interface_to": "g2/0"
     },
     {
       "from": "R12",
       "to": "R10",
       "interface_from": "g3/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R13",
       "to": "R11",
       "interface_from": "g3/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R10",
       "to": "R11",
       "interface_from": "g2/0",
-      "interface_to": "g2/0",
-      "type": "intra-as"
+      "interface_to": "g2/0"
     },
     {
       "from": "R10",
       "to": "R8",
       "interface_from": "g3/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R10",
       "to": "R9",
       "interface_from": "g4/0",
-      "interface_to": "g1/0",
-      "type": "intra-as"
+      "interface_to": "g1/0"
     },
     {
       "from": "R11",
       "to": "R8",
       "interface_from": "g3/0",
-      "interface_to": "g2/0",
-      "type": "intra-as"
+      "interface_to": "g2/0"
     },
     {
       "from": "R11",
       "to": "R9",
-      "interface_from": "g4/0",
-      "interface_to": "g2/0",
-      "type": "intra-as"
+      "interface_from": "g4/0"
     }
   ],
   "client_provider_relationships" : [

@@ -61,7 +61,7 @@ def main(intentfile):
         as_list[rel["client"]].relationships.append(Relationship("client", as_list[rel["provider"]]))
         as_list[rel["provider"]].relationships.append(Relationship("provider", as_list[rel["client"]]))
 
-    for rel in intents.get("peer_to_peer", []):
+    for rel in intents.get("peer_to_peer_relationships", []):
         as_list[rel["peer_1"]].relationships.append(Relationship("peer", as_list[rel["peer_2"]]))
         as_list[rel["peer_2"]].relationships.append(Relationship("peer", as_list[rel["peer_1"]]))
 
@@ -93,10 +93,14 @@ def main(intentfile):
                     center=(0, 0),
                 )
 
-                pos = router_positions.get(name, {"x": 0, "y": 0})
 
-                g.create_router(name=name, auto_recover=True) # Creating/recovering router in GNS
-                # g.create_router(name=name, auto_recover=True, x=pos["x"], y=pos["y"]) # Creating/recovering router in GNS
+                # Creating/recovering router in GNS
+                if gns_config["arrange_automagically"]:
+                    pos = router_positions.get(name, {"x": 0, "y": 0})
+                    g.create_router(name=name, auto_recover=True, x=pos["x"], y=pos["y"]) # Creating/recovering router in GNS
+                else:
+                    g.create_router(name=name, auto_recover=True)
+
             except Exception as exp:
                 console.print_exception()
                 log.fatal_error("Failed to create/recover the router {name} (GNS)", exp)
@@ -136,7 +140,7 @@ def main(intentfile):
 
         #### !!!!! link["type"] est redondant car on peut le déduire à partir de l'as de chaque routeur
         # Configure the interface for both routers of the link
-        configure_interfaces(router_a, router_b, interface_a, interface_b, link["type"])
+        configure_interfaces(router_a, router_b, interface_a, interface_b)
 
 
     ### Enable BGP on every router
@@ -291,7 +295,7 @@ def write_configs(routers):
 
 
 
-def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b: str, link_type: str):
+def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b: str):
     log.info(f"Configuring {interface_a} on {r_a.name}")
     log.info(f"Configuring {interface_b} on {r_b.name}")
 
@@ -305,7 +309,6 @@ def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b
     
     # Internal protocol setup
     if r_a.asn == r_b.asn: # Same as
-    # if link_type == "intra-as":
         protocol = r_a.a_s.internal_protocol
 
         if protocol == "rip":
@@ -320,7 +323,6 @@ def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b
 
     # Inter as protocol AKA eBGP
     else: # Different as
-    # if link_type == "inter-as":
         log.info(f"Enabling eBGP")
 
         r_a.is_border = True
