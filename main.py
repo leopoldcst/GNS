@@ -125,6 +125,7 @@ def main(intentfile):
 
     ### Link and protocol setup
     cpt_link = 0
+    cond_creation_address = intents["gns_auto_config"]["auto_create_address"]
     for link in intents["links"]:
         router_a: Router = routers[link["from"]]
         router_b: Router = routers[link["to"]]
@@ -141,7 +142,7 @@ def main(intentfile):
 
         #### !!!!! link["type"] est redondant car on peut le déduire à partir de l'as de chaque routeur
         # Configure the interface for both routers of the link
-        configure_interfaces(router_a, router_b, interface_a, interface_b, intents, cpt_link)
+        configure_interfaces(router_a, router_b, interface_a, interface_b, intents, cpt_link,cond_creation_address)
         cpt_link +=1
 
 
@@ -300,11 +301,11 @@ def write_configs(routers):
 
 
 
-def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b: str, intent, cpt: int):
+def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b: str, intent, cpt: int, cond: bool):
     log.info(f"Configuring {interface_a} on {r_a.name}")
     log.info(f"Configuring {interface_b} on {r_b.name}")
 
-    if intent["gns_auto_config"]["auto_create_address"]:
+    if cond:
         addr_a, addr_b = compute_ip_address(r_a, r_b)
     else:
         addr_a, addr_b = intent["address_pool"][cpt][0], intent["address_pool"][cpt][1]
