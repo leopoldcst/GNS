@@ -23,7 +23,7 @@ from display import router_coords_from_intent
 ### CLI Arguments
 @click.command()
 # @click.option('--count', default=1, help='Number of greetings.')
-@click.argument('intentfile', type=click.Path(exists=True, readable=True), default="./intent_projet.json")
+@click.argument('intentfile', type=click.Path(exists=True, readable=True), default="./intent_7_AS.json")
 def main(intentfile):
     console.print("[b][blue]GNS configuring util[/b][/blue]")
     console.print(f"Intent file is [b]{intentfile}[/b]")
@@ -95,7 +95,7 @@ def main(intentfile):
 
 
                 # Creating/recovering router in GNS
-                if gns_config["arrange_automagically"]:
+                if gns_config.get("arrange_automagically", False):
                     pos = router_positions.get(name, {"x": 0, "y": 0})
                     g.create_router(name=name, auto_recover=True, x=pos["x"], y=pos["y"]) # Creating/recovering router in GNS
                 else:
@@ -124,6 +124,7 @@ def main(intentfile):
     
 
     ### Link and protocol setup
+    cpt_link = 0
     for link in intents["links"]:
         router_a: Router = routers[link["from"]]
         router_b: Router = routers[link["to"]]
@@ -140,7 +141,8 @@ def main(intentfile):
 
         #### !!!!! link["type"] est redondant car on peut le déduire à partir de l'as de chaque routeur
         # Configure the interface for both routers of the link
-        configure_interfaces(router_a, router_b, interface_a, interface_b)
+        configure_interfaces(router_a, router_b, interface_a, interface_b, intents, cpt_link)
+        cpt_link +=1
 
 
     ### Enable BGP on every router
@@ -219,7 +221,7 @@ def main(intentfile):
     ### Telnet sending
     write_configs(routers)
 
-    if use_gnsfy and gns_config["arrange_in_circle"]:
+    if use_gnsfy and gns_config.get("arrange_in_circle", False):
         g.lab.arrange_nodes_circular()
     
     console.print("\n[b][green]Finished![/b][/green]")
@@ -298,11 +300,14 @@ def write_configs(routers):
 
 
 
-def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b: str):
+def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b: str, intent, cpt: int):
     log.info(f"Configuring {interface_a} on {r_a.name}")
     log.info(f"Configuring {interface_b} on {r_b.name}")
 
-    addr_a, addr_b = compute_ip_address(r_a, r_b)
+    if intent["gns_auto_config"]["auto_create_address"]:
+        addr_a, addr_b = compute_ip_address(r_a, r_b)
+    else:
+        addr_a, addr_b = intent["address_pool"][cpt][0], intent["address_pool"][cpt][1]
 
     r_a.append_cmds(commands.address_config(interface_a, addr_a))
     r_b.append_cmds(commands.address_config(interface_b, addr_b))
