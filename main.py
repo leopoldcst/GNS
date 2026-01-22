@@ -34,13 +34,27 @@ def main(intentfile):
     ### Reading the intent file
     intents = read_intents(intentfile)
 
+
     ### Check if we use gnsfy
     use_gnsfy = False    
     gns_config: dict[str, typing.Any] = intents.get("gns_auto_config")
 
+
+    ## check if there is enough addresses for the manual way to give addresses
+    nb_links = len(intents.get("links", []))
+    nb_routers = len(intents.get("routers", []))
+
+    if not gns_config["auto_create_address"]["physical"]:
+        if len(intents["address_pool"]["physical"]) < nb_links:
+            log.fatal_error("Pas assez d'adresses physiques", Exception("address_pool.physical"))
+
+    if not gns_config["auto_create_address"]["Loopback"]:
+        if len(intents["address_pool"]["Loopback"]) < nb_routers:
+            log.fatal_error("Pas assez d'adresses loopback", Exception("address_pool.Loopback"))
+
+
     if gns_config and gns_config.get("enable"):
         use_gnsfy = True
-
 
     ### Project opening
     if use_gnsfy:
@@ -125,7 +139,7 @@ def main(intentfile):
 
     ### Link and protocol setup
     cpt_link = 0
-    cond_creation_address = intents["gns_auto_config"]["auto_create_address"]
+    cond_creation_address = intents["gns_auto_config"]["auto_create_address"]["physical"]
     for link in intents["links"]:
         router_a: Router = routers[link["from"]]
         router_b: Router = routers[link["to"]]
@@ -152,17 +166,25 @@ def main(intentfile):
 
 
     ##### iBGP config
+    cpt = 0
     for asn, a_s in as_list.items():
         ### Adding loopback address
         # We first need to enable the loopback interface on all the routers before configuring iBGP
+        
         for name, r in a_s.routers.items():
-            loopback_addr = compute_loopback_address(name, asn)
+            if gns_config["auto_create_address"]["Loopback"]:
+                loopback_addr = compute_loopback_address(name, asn)
+
+            else:
+                loopback_addr = intents["address_pool"]["Loopback"][cpt]
 
             r.interfaces["Loopback0"].append(loopback_addr)
             r.append_cmds(commands.loopback_config(
                 loopback_addr,
                 a_s.internal_protocol,
                 r.id))
+            
+            cpt += 1
 
 
         ### Full mesh iBGP sessions
@@ -308,7 +330,7 @@ def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b
     if cond:
         addr_a, addr_b = compute_ip_address(r_a, r_b)
     else:
-        addr_a, addr_b = intent["address_pool"][cpt][0], intent["address_pool"][cpt][1]
+        addr_a, addr_b = intent["address_pool"]["physical"][cpt][0], intent["address_pool"]["physical"][cpt][1]
 
     r_a.append_cmds(commands.address_config(interface_a, addr_a))
     r_b.append_cmds(commands.address_config(interface_b, addr_b))
