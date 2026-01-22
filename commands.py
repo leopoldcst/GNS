@@ -51,7 +51,7 @@ def rip_config(address, interface, name):
     return conf
 
 
-def ospf_config(address, interface, name, area_nb):
+def ospf_config(address, interface, name, area_nb, cost=None):
     conf = []
     process_id = int(name[1:])
     # conf += baseRouterConfig(name)
@@ -63,8 +63,13 @@ def ospf_config(address, interface, name, area_nb):
         "exit",
         f"interface {interface}",
         f"ipv6 ospf {process_id} area {area_nb}",
-        "exit"
-    ]
+        ]
+
+    if cost is not None:
+        conf.append(f"ipv6 ospf cost {int(cost)}")
+    
+    conf.append("exit")
+    
 
     return conf
 

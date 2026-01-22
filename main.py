@@ -153,10 +153,13 @@ def main(intentfile):
                         link["interface_from"],
                         link["to"],
                         link["interface_to"])
+            
+        
+        cost_from,cost_to = read_ospf_cost(link)
 
         #### !!!!! link["type"] est redondant car on peut le déduire à partir de l'as de chaque routeur
         # Configure the interface for both routers of the link
-        configure_interfaces(router_a, router_b, interface_a, interface_b, intents, cpt_link,cond_creation_address)
+        configure_interfaces(router_a, router_b, interface_a, interface_b, intents, cpt_link,cond_creation_address, cost_from, cost_to)
         cpt_link +=1
 
 
@@ -277,6 +280,15 @@ def tag_community(intents, asn: int, link: RelationshipLink, type: str):
     r.append_cmds(commands.create_community_list(constants["community_list_name"], value_community))
 
 
+def read_ospf_cost(link):
+    if "ospf_cost" not in link:
+        return None, None
+    cost = link["ospf_cost"]
+    if isinstance(cost, dict):
+        return cost.get("from"), cost.get("to")
+    return cost, cost
+
+
 
 def apply_community_conditions(a_s: AS):
     block_list = []
@@ -323,7 +335,7 @@ def write_configs(routers):
 
 
 
-def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b: str, intent, cpt: int, cond: bool):
+def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b: str, intent, cpt: int, cond: bool, cost_a=None , cost_b=None):
     log.info(f"Configuring {interface_a} on {r_a.name}")
     log.info(f"Configuring {interface_b} on {r_b.name}")
 
@@ -349,8 +361,8 @@ def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b
 
         elif protocol == "ospf":
             log.info(f"Enabling OSPF")
-            r_a.append_cmds(commands.ospf_config(addr_a, interface_a, r_a.name, 0))
-            r_b.append_cmds(commands.ospf_config(addr_b, interface_b, r_b.name, 0))
+            r_a.append_cmds(commands.ospf_config(addr_a, interface_a, r_a.name, 0,cost_a))
+            r_b.append_cmds(commands.ospf_config(addr_b, interface_b, r_b.name, 0,cost_b))
 
     # Inter as protocol AKA eBGP
     else: # Different as
