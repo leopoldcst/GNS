@@ -23,7 +23,7 @@ from display import router_coords_from_intent
 ### CLI Arguments
 @click.command()
 # @click.option('--count', default=1, help='Number of greetings.')
-@click.argument('intentfile', type=click.Path(exists=True, readable=True), default="./intent_7_AS.json")
+@click.argument('intentfile', type=click.Path(exists=True, readable=True), default="./intents/intent_2_AS_OSPF.json")
 def main(intentfile):
     console.print("[b][blue]GNS configuring util[/b][/blue]")
     console.print(f"Intent file is [b]{intentfile}[/b]")

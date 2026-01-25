@@ -127,8 +127,7 @@
       "from": "R7",
       "to": "R9",
       "interface_from": "g3/0",
-      "interface_to": "g1/0",
-      "ospf_cost": { "from": 10, "to": 100 }
+      "interface_to": "g1/0"
     },
     {
       "from": "R8",
@@ -244,6 +243,8 @@
       "interface_from": "g2/0",
       "interface_to": "g2/0"
     }
+
+
   ],
   "address_pool" : 
     {"physical" : 
