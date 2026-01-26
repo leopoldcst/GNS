@@ -96,7 +96,7 @@ def main(intentfile):
         port = router_data.get("port")
         host = router_data.get("host")
 
-        if use_gnsfy and gns_config["create_routers"]:
+        if use_gnsfy and gns_config.get("create_routers", False):
             try:
                 log.info(f"Creating/recovering router {name} (GNS)")
                 
@@ -119,12 +119,12 @@ def main(intentfile):
                 console.print_exception()
                 log.fatal_error("Failed to create/recover the router {name} (GNS)", exp)
 
-            if gns_config["auto_fetch_router_infos"]:
+            if gns_config.get("auto_fetch_router_infos", False):
                 port = g.get_router_port(name)
                 host = gns_config.get("ip", "127.0.0.1")
 
         if host is None or port is None:
-            if gns_config["auto_fetch_router_infos"]:
+            if gns_config.get("auto_fetch_router_infos", False):
                 log.fatal_error(f"Failed to fetch the host or port for {name}", Exception("Can't fetch host/port on GNS"))
             else:
                 log.fatal_error(f"Failed to fetch the host or port for {name}", Exception("Can't get host/port in intent"))
@@ -147,7 +147,7 @@ def main(intentfile):
         interface_b: str = link["interface_to"]
 
 
-        if gns_config["create_links"]:
+        if gns_config.get("create_links", False):
             log.info(f"Adding link from {link["interface_from"]} on {link["from"]} to {link["interface_to"]} on {link["to"]} (GNS)")
             g.create_link(link["from"], # Adding link inside GNS
                         link["interface_from"],
@@ -155,11 +155,17 @@ def main(intentfile):
                         link["interface_to"])
             
         
-        cost_from,cost_to = read_ospf_cost(link)
+        cost_from, cost_to = read_ospf_cost(link)
 
-        #### !!!!! link["type"] est redondant car on peut le déduire à partir de l'as de chaque routeur
         # Configure the interface for both routers of the link
-        configure_interfaces(router_a, router_b, interface_a, interface_b, intents, cpt_link,cond_creation_address, cost_from, cost_to)
+        if cond_creation_address:
+            addr_a, addr_b = compute_ip_address(router_a, router_b)
+        else:
+            addr_a, addr_b = intents["address_pool"]["physical"][cpt_link][0], intents["address_pool"]["physical"][cpt_link][1]
+
+        configure_one_interface(router_a, router_b, interface_a, addr_a, addr_b, cost_from)
+        configure_one_interface(router_b, router_a, interface_b, addr_b, addr_a, cost_to)
+        
         cpt_link +=1
 
 
@@ -175,7 +181,7 @@ def main(intentfile):
         # We first need to enable the loopback interface on all the routers before configuring iBGP
         
         for name, r in a_s.routers.items():
-            if gns_config["auto_create_address"]["Loopback"]:
+            if gns_config.get("auto_create_address", False) and gns_config["auto_create_address"].get("Loopback", False):
                 loopback_addr = compute_loopback_address(name, asn)
 
             else:
@@ -335,20 +341,12 @@ def write_configs(routers):
 
 
 
-def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b: str, intent, cpt: int, cond: bool, cost_a=None , cost_b=None):
+def configure_one_interface(r_a: Router, r_b: Router, interface_a: str, addr_a:str, addr_b:str, opsf_cost=None):
     log.info(f"Configuring {interface_a} on {r_a.name}")
-    log.info(f"Configuring {interface_b} on {r_b.name}")
-
-    if cond:
-        addr_a, addr_b = compute_ip_address(r_a, r_b)
-    else:
-        addr_a, addr_b = intent["address_pool"]["physical"][cpt][0], intent["address_pool"]["physical"][cpt][1]
-
+    
     r_a.append_cmds(commands.address_config(interface_a, addr_a))
-    r_b.append_cmds(commands.address_config(interface_b, addr_b))
 
     r_a.interfaces[interface_a].append(addr_a)
-    r_b.interfaces[interface_b].append(addr_b)
     
     # Internal protocol setup
     if r_a.asn == r_b.asn: # Same as
@@ -357,34 +355,27 @@ def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b
         if protocol == "rip":
             log.info(f"Enabling RIP")
             r_a.append_cmds(commands.rip_config(addr_a, interface_a, r_a.name))
-            r_b.append_cmds(commands.rip_config(addr_b, interface_b, r_b.name))
 
         elif protocol == "ospf":
             log.info(f"Enabling OSPF")
-            r_a.append_cmds(commands.ospf_config(addr_a, interface_a, r_a.name, 0,cost_a))
-            r_b.append_cmds(commands.ospf_config(addr_b, interface_b, r_b.name, 0,cost_b))
+            r_a.append_cmds(commands.ospf_config(addr_a, interface_a, r_a.name, 0, opsf_cost))
 
     # Inter as protocol AKA eBGP
     else: # Different as
         log.info(f"Enabling eBGP")
 
         r_a.is_border = True
-        r_b.is_border = True
 
         addr_a_without_mask = remove_ipv6_mask(addr_a)
         addr_b_without_mask = remove_ipv6_mask(addr_b)
         
-        prefix_a = str(ipaddress.IPv6Interface(addr_a).network) ### !!! Refactor this part
-        prefix_b = str(ipaddress.IPv6Interface(addr_b).network)
+        prefix_a = str(ipaddress.IPv6Interface(addr_a).network)
 
         r_a.append_cmds(commands.bgp_advertise_network(r_a.asn, prefix_a))
-        r_b.append_cmds(commands.bgp_advertise_network(r_b.asn, prefix_b))
 
         r_a.append_cmds(commands.e_bgp_neighbor_config(r_a.asn, addr_b_without_mask, r_b.asn))
-        r_b.append_cmds(commands.e_bgp_neighbor_config(r_b.asn, addr_a_without_mask, r_a.asn))
 
         r_a.append_cmds(commands.send_community(r_a.asn, addr_b_without_mask))
-        r_b.append_cmds(commands.send_community(r_b.asn, addr_a_without_mask))
 
         ### Find the corresponding relationship for this inter-as link
         # Loops through the relationship to see which one has the router
@@ -397,15 +388,7 @@ def configure_interfaces(r_a: Router, r_b: Router, interface_a: str, interface_b
                     r_b,
                     addr_b
                 ))
-        
-        for rel in r_b.a_s.relationships:
-            if rel.other.routers.get(r_a.name) is not None:
-                rel.links.append(RelationshipLink(
-                    r_b,
-                    addr_b,
-                    r_a,
-                    addr_a
-                ))
+
 
 
 
@@ -429,7 +412,7 @@ def open_gns(gns_config):
     log.info("Auto config is enabled, connecting to the server... (GNS)")
 
     try:
-        g = gns.GnsProject(name=gns_config["project_name"], ip=gns_config.get("ip", "http://localhost"), port=gns_config.get("port", 3000))
+        g = gns.GnsProject(name=gns_config["project_name"], ip=gns_config.get("ip", "http://localhost"), port=gns_config.get("port", 3080))
         g.create_new(auto_recover=True)
         g.open()
     
