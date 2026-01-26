@@ -37,7 +37,7 @@ Concrètement, la configuration du réseau est décrite de façon déléclarativ
 - Adresses IP choisies automatiquement (libre ou parmis un pool) ou paramétrées
 - Nombre illimité d'AS, de routeurs et de liens
 - eBGP & iBGP
-- RIP ou OSPF en protocol de routage au sein d'une AS
+- RIP ou OSPF en protocole de routage au sein d'une AS
 - OPSF Metrics
 - Relations entre les AS (client-fournisseur, peer-to-peer) grâce aux communty policies
 
@@ -104,23 +104,23 @@ Ce tableau décrit les clés de haut niveau présentes à la racine du fichier J
 
 | Nom propriété | Type | Description | Valeur par défaut / Exemple |
 | - | - | - | - |
-| enable | boolean | Active la connexion au serveur GNS | `true` |
-| host | string | Adresse IP du serveur GNS | `"127.0.0.1"` |
-| port | string | Port d'écoute du serveur GNS | `"3080"` |
-| project_name | string | Nom du projet dans GNS3 | **Requis** (ex: `"Test_Project"`) |
-| create_routers | boolean | Création automatique des nœuds routeurs dans le projet | `true` |
-| create_links | boolean | Création automatique des liens physiques entre routeurs | `true` |
-| arrange_automagically | boolean | Tente d'organiser visuellement les nœuds automatiquement en groupant par AS | `true` |
-| arrange_in_circle | boolean | Place tous les routeurs en cercle (si l'arrangement auto est désactivé) | `false` |
-| auto_fetch_router_infos | boolean | Récupère automatiquement les IDs et ports des routeurs via l'API | `true` |
-| auto_create_address | object | Configuration de la génération automatique d'IP (voir tableau suivant) | `{ "physical": true, "Loopback": true }` |
+| enable | boolean | (Optionnel) Active la connexion au serveur GNS | `false` |
+| host | string | (Optionnel) Adresse IP du serveur GNS | `"127.0.0.1"` |
+| port | string | (Optionnel) Port d'écoute du serveur GNS | `"3080"` |
+| project_name | string | (Obligatoire si enable=true) Nom du projet dans GNS3 | (ex: `"Test_Project"`) |
+| create_routers | boolean | (Optionnel) Création automatique des nœuds routeurs dans le projet | `false` |
+| create_links | boolean | (Optionnel) Création automatique des liens physiques entre routeurs | `false` |
+| arrange_automagically | (Optionnel) boolean | Tente d'organiser visuellement les nœuds automatiquement en groupant par AS | `false` |
+| arrange_in_circle | boolean | (Optionnel) Place tous les routeurs en cercle (si l'arrangement auto est désactivé) | `false` |
+| auto_fetch_router_infos | boolean | (Optionnel) Récupère automatiquement les IDs et ports des routeurs via l'API | `false` |
+| auto_create_address | object | (Optionnel) Configuration de la génération automatique d'IP (voir tableau suivant) | `{ "physical": true, "Loopback": true }` |
 
 ### auto_create_address (Sous-objet de gns_auto_config)
 
 | Nom propriété | Type | Description | Exemple |
 | - | - | - | - |
-| physical | boolean | Si `true`, génère automatiquement les IPs des liens physiques. Si `false`, utilise `address_pool`. | `true` |
-| Loopback | boolean | Si `true`, génère automatiquement les IPs des Loopbacks. Si `false`, utilise `address_pool`. | `true` |
+| physical | boolean | (Optionnel) Si `true`, génère automatiquement les IPs des liens physiques. Si `false`, utilise `address_pool`. | `true` |
+| Loopback | boolean | (Optionnel) Si `true`, génère automatiquement les IPs des Loopbacks. Si `false`, utilise `address_pool`. | `false` |
 
 ## as
 
@@ -135,8 +135,8 @@ Ce tableau décrit les clés de haut niveau présentes à la racine du fichier J
 | - | - | - | - |
 | name | string | Nom d'hôte (hostname) du routeur | `"R1"` |
 | asn | integer | Numéro d'AS auquel appartient ce routeur | `1` |
-| host | string | (Optionnel si create_routers=true) Adresse ip du routeur | `"127.0.0.1"` |
-| port | string | (Optionnel si create_routers=true) Port Telent du routeur | `"5001"` |
+| host | string | (Optionnel si create_routers=true et auto_fetch_router_infos=true) Adresse ip du routeur | `"127.0.0.1"` |
+| port | string | (Optionnel si create_routers=true et auto_fetch_router_infos=true) Port Telent du routeur | `"5001"` |
 
 ## links
 
@@ -146,7 +146,7 @@ Ce tableau décrit les clés de haut niveau présentes à la racine du fichier J
 | to | string | Nom du routeur destination | `"R2"` |
 | interface_from | string | Interface de départ sur le routeur source | `"g1/0"` |
 | interface_to | string | Interface d'arrivée sur le routeur destination | `"g1/0"` |
-| ospf_cost | object | (Optionnel) Surcharge le coût OSPF par défaut (voir tableau suivant) | `{ "from": 10, "to": 10 }` |
+| ospf_cost | object | (Optionnel même en protocole OPSF) Surcharge le coût OSPF par défaut (voir tableau suivant) | `{ "from": 10, "to": 10 }` |
 
 ### ospf_cost (Sous-objet de links)
 
