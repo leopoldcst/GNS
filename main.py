@@ -130,7 +130,7 @@ def main(intentfile):
             else:
                 log.fatal_error(f"Failed to fetch the host or port for {name}", Exception("Can't get host/port in intent"))
 
-        routers[name] = Router(name, asn, as_list[asn], host, port, write)
+        routers[name] = Router(name, asn, as_list[asn], host, port, write=write)
         as_list[asn].routers[name] = routers[name]
 
         # Basic router config

@@ -42,6 +42,7 @@ class Router:
         self.append_cmd("end")
         if self.write:
             self.append_cmd("write")
+            self.append_cmd("")
 
         telnet.run_on_router(self.cmds, self.host, self.port)
 
