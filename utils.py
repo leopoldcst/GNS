@@ -6,12 +6,13 @@ import log
 import telnet
 
 class Router:
-    def __init__(self, name: str, asn: int, a_s: AS, host, port, id: str = ""):
+    def __init__(self, name: str, asn: int, a_s: AS, host, port, id: str = "", write:bool =False):
         self.name: str = name
         self.asn: int = asn
         self.a_s: AS = a_s
         self.host: str = host
         self.port: str = port
+        self.write: bool = write
 
         self.is_border: bool = False
 
@@ -39,6 +40,8 @@ class Router:
 
     def send_cmds(self):
         self.append_cmd("end")
+        if self.write:
+            self.append_cmd("write")
 
         telnet.run_on_router(self.cmds, self.host, self.port)
 
