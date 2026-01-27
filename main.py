@@ -95,6 +95,7 @@ def main(intentfile):
         # either automaticaly from GNS or with the user's intents
         port = router_data.get("port")
         host = router_data.get("host")
+        write = router_data.get("write",False) or intents.get("write",False)
 
         if use_gnsfy and gns_config.get("create_routers", False):
             try:
@@ -129,7 +130,7 @@ def main(intentfile):
             else:
                 log.fatal_error(f"Failed to fetch the host or port for {name}", Exception("Can't get host/port in intent"))
 
-        routers[name] = Router(name, asn, as_list[asn], host, port)
+        routers[name] = Router(name, asn, as_list[asn], host, port, write=write)
         as_list[asn].routers[name] = routers[name]
 
         # Basic router config
