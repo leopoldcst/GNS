@@ -3,7 +3,7 @@
     "enable": true,
     "host": "127.0.0.1",
     "port": "3080",
-    "project_name": "Test_2_AS_OSPF_Cost",
+    "project_name": "Test_2_AS_OSPF_Comparaison",
     "create_routers": true,
     "create_links": true,
     "arrange_automagically": true,
@@ -17,127 +17,168 @@
 
   "as": [
     { "asn": 1, "internal_protocol": "OSPF" },
-    { "asn": 2, "internal_protocol": "OSPF" }
+    { "asn": 2, "internal_protocol": "OSPF" },
+    { "asn": 3, "internal_protocol": "OSPF" },
+    { "asn": 4, "internal_protocol": "OSPF" }
   ],
 
   "routers": [
-    { "name": "R1",  "asn": 1 },
-    { "name": "R2",  "asn": 1 },
-    { "name": "R3",  "asn": 1 },
-    { "name": "R4",  "asn": 1 },
-    { "name": "R5",  "asn": 1 },
-    { "name": "R6",  "asn": 1 },
-    { "name": "R7",  "asn": 1 },
+    { "name": "A1",  "asn": 1 },
+    { "name": "A2",  "asn": 1 },
+    { "name": "A3",  "asn": 1 },
+    { "name": "A4",  "asn": 1 },
+    { "name": "A5",  "asn": 1 },
+    { "name": "A6",  "asn": 1 },
+    { "name": "A7",  "asn": 1 },
 
-    { "name": "R8",  "asn": 2 },
-    { "name": "R9",  "asn": 2 },
-    { "name": "R10", "asn": 2 },
-    { "name": "R11", "asn": 2 },
-    { "name": "R12", "asn": 2 },
-    { "name": "R13", "asn": 2 },
-    { "name": "R14", "asn": 2 }
+    { "name": "A8",  "asn": 2 },
+    { "name": "A9",  "asn": 2 },
+    { "name": "A10", "asn": 2 },
+    { "name": "A11", "asn": 2 },
+    { "name": "A12", "asn": 2 },
+    { "name": "A13", "asn": 2 },
+    { "name": "A14", "asn": 2 },
+
+    { "name": "B1", "asn": 3 },
+    { "name": "B2", "asn": 3 },
+    { "name": "B3", "asn": 3 },
+    { "name": "B4", "asn": 3 },
+    { "name": "B5", "asn": 3 },
+    { "name": "B6", "asn": 3 },
+    { "name": "B7", "asn": 3 },
+
+    { "name": "B8", "asn": 4 },
+    { "name": "B9", "asn": 4 },
+    { "name": "B10", "asn": 4 },
+    { "name": "B11", "asn": 4 },
+    { "name": "B12", "asn": 4 },
+    { "name": "B13", "asn": 4 },
+    { "name": "B14", "asn": 4 }
   ],
 
   "links": [
-
     {
-      "from": "R1",
-      "to": "R2",
+      "from": "A1",
+      "to": "A2",
       "interface_from": "g1/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 10, "to": 10 }
     },
     {
-      "from": "R2",
-      "to": "R4",
+      "from": "A2",
+      "to": "A4",
       "interface_from": "g2/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 10, "to": 10 }
     },
     {
-      "from": "R4",
-      "to": "R5",
+      "from": "A4",
+      "to": "A5",
       "interface_from": "g2/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 10, "to": 10 }
     },
     {
-      "from": "R5",
-      "to": "R6",
+      "from": "A5",
+      "to": "A6",
       "interface_from": "g2/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 10, "to": 10 }
     },
     {
-      "from": "R1",
-      "to": "R3",
+      "from": "A1",
+      "to": "A3",
       "interface_from": "g2/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 50, "to": 50 }
     },
     {
-      "from": "R3",
-      "to": "R7",
+      "from": "A3",
+      "to": "A7",
       "interface_from": "g2/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 50, "to": 50 }
     },
     {
-      "from": "R8",
-      "to": "R9",
+      "from": "A8",
+      "to": "A9",
       "interface_from": "g1/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 10, "to": 10 }
     },
     {
-      "from": "R9",
-      "to": "R11",
+      "from": "A9",
+      "to": "A11",
       "interface_from": "g2/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 10, "to": 10 }
     },
     {
-      "from": "R11",
-      "to": "R12",
+      "from": "A11",
+      "to": "A12",
       "interface_from": "g2/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 10, "to": 10 }
     },
     {
-      "from": "R12",
-      "to": "R13",
+      "from": "A12",
+      "to": "A13",
       "interface_from": "g2/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 10, "to": 10 }
     },
 
     {
-      "from": "R8",
-      "to": "R10",
+      "from": "A8",
+      "to": "A10",
       "interface_from": "g2/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 50, "to": 50 }
     },
     {
-      "from": "R10",
-      "to": "R14",
+      "from": "A10",
+      "to": "A14",
       "interface_from": "g2/0",
       "interface_to": "g1/0",
       "ospf_cost": { "from": 50, "to": 50 }
     },
     {
-      "from": "R3",
-      "to": "R10",
+      "from": "A3",
+      "to": "A10",
       "interface_from": "g3/0",
       "interface_to": "g3/0",
       "ospf_cost": { "from": 100, "to": 100 }
     },
     {
-    "from": "R6",
-    "to": "R13",
+    "from": "A6",
+    "to": "A13",
     "interface_from": "g3/0",
     "interface_to": "g3/0",
     "ospf_cost": { "from": 1, "to": 1 }
-  }
+  },
+    { "from": "B1", "to": "B2", "interface_from": "g1/0", "interface_to": "g1/0" },
+    { "from": "B1", "to": "B3", "interface_from": "g2/0", "interface_to": "g1/0" },
+    { "from": "B2", "to": "B4", "interface_from": "g2/0", "interface_to": "g1/0" },
+    { "from": "B2", "to": "B5", "interface_from": "g3/0", "interface_to": "g1/0" },
+    { "from": "B3", "to": "B4", "interface_from": "g2/0", "interface_to": "g2/0" },
+    { "from": "B3", "to": "B5", "interface_from": "g3/0", "interface_to": "g2/0" },
+    { "from": "B4", "to": "B6", "interface_from": "g3/0", "interface_to": "g1/0" },
+    { "from": "B5", "to": "B6", "interface_from": "g3/0", "interface_to": "g2/0" },
+    { "from": "B4", "to": "B5", "interface_from": "g4/0", "interface_to": "g4/0" },
+    { "from": "B6", "to": "B7", "interface_from": "g3/0", "interface_to": "g1/0" },
+
+    { "from": "B8", "to": "B9", "interface_from": "g1/0", "interface_to": "g1/0" },
+    { "from": "B8", "to": "B10", "interface_from": "g2/0", "interface_to": "g1/0" },
+    { "from": "B9", "to": "B11", "interface_from": "g2/0", "interface_to": "g1/0" },
+    { "from": "B9", "to": "B12", "interface_from": "g3/0", "interface_to": "g1/0" },
+    { "from": "B10", "to": "B11", "interface_from": "g2/0", "interface_to": "g2/0" },
+    { "from": "B10", "to": "B12", "interface_from": "g3/0", "interface_to": "g2/0" },
+    { "from": "B11", "to": "B13", "interface_from": "g3/0", "interface_to": "g1/0" },
+    { "from": "B12", "to": "B13", "interface_from": "g3/0", "interface_to": "g2/0" },
+    { "from": "B11", "to": "B12", "interface_from": "g4/0", "interface_to": "g4/0" },
+    { "from": "B13", "to": "B14", "interface_from": "g3/0", "interface_to": "g1/0" },
+
+    { "from": "B7", "to": "B14", "interface_from": "g2/0", "interface_to": "g2/0" },
+    { "from": "B6", "to": "B13", "interface_from": "g4/0", "interface_to": "g4/0" }
   ]
 }
