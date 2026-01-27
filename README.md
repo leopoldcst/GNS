@@ -34,7 +34,7 @@ Concrètement, la configuration du réseau est décrite de façon déléclarativ
 - Envoie automatique des commandes vers les routeurs via Telnet
 - Création dans GNS3 du projet, des routeurs et de leurs liens
 - Récupération des port Telnet des routeurs dans GNS ou configuration manuelle
-- Adresses IP choisies automatiquement (libre ou parmis un pool) ou paramétrées
+- Adresses IP choisies automatiquement  ou parmis un pool
 - Nombre illimité d'AS, de routeurs et de liens
 - eBGP & iBGP
 - RIP ou OSPF en protocole de routage au sein d'une AS
@@ -99,6 +99,7 @@ Ce tableau décrit les clés de haut niveau présentes à la racine du fichier J
 | [client_provider_relationships](#client_provider_relationships) | array | (Optionnel) Définition des relations BGP Client / Fournisseur |
 | [peer_to_peer_relationships](#peer_to_peer_relationships) | array | (Optionnel) Définition des relations BGP de Peering |
 | [community_constants](#community_constants) | object | Optionnel (Requis si relations BGP utilisées) Configuration des tags et préférences locales pour BGP | 
+| write | boolean | (Optionnel) Sauvegarde la config sur tous les routeurs |
 
 ## gns_auto_config
 
@@ -111,7 +112,6 @@ Ce tableau décrit les clés de haut niveau présentes à la racine du fichier J
 | create_routers | boolean | (Optionnel) Création automatique des nœuds routeurs dans le projet | `false` |
 | create_links | boolean | (Optionnel) Création automatique des liens physiques entre routeurs | `false` |
 | arrange_automagically | (Optionnel) boolean | Tente d'organiser visuellement les nœuds automatiquement en groupant par AS | `false` |
-| arrange_in_circle | boolean | (Optionnel) Place tous les routeurs en cercle (si l'arrangement auto est désactivé) | `false` |
 | auto_fetch_router_infos | boolean | (Optionnel) Récupère automatiquement les IDs et ports des routeurs via l'API | `false` |
 | auto_create_address | object | (Optionnel) Configuration de la génération automatique d'IP (voir tableau suivant) | `{ "physical": true, "Loopback": true }` |
 
@@ -137,6 +137,7 @@ Ce tableau décrit les clés de haut niveau présentes à la racine du fichier J
 | asn | integer | Numéro d'AS auquel appartient ce routeur | `1` |
 | host | string | (Optionnel si create_routers=true et auto_fetch_router_infos=true) Adresse ip du routeur | `"127.0.0.1"` |
 | port | string | (Optionnel si create_routers=true et auto_fetch_router_infos=true) Port Telent du routeur | `"5001"` |
+| write | boolean | (Optionnel) Sauvegarde la config | `true` |
 
 ## links
 
