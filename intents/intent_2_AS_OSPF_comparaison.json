@@ -1,0 +1,143 @@
+{
+  "gns_auto_config": {
+    "enable": true,
+    "host": "127.0.0.1",
+    "port": "3080",
+    "project_name": "Test_2_AS_OSPF_Cost",
+    "create_routers": true,
+    "create_links": true,
+    "arrange_automagically": true,
+    "arrange_in_circle": false,
+    "auto_fetch_router_infos": true,
+    "auto_create_address": {
+      "physical": true,
+      "Loopback": true
+    }
+  },
+  "write": true,
+  "as": [
+    { "asn": 1, "internal_protocol": "OSPF" },
+    { "asn": 2, "internal_protocol": "OSPF" }
+  ],
+
+  "routers": [
+    { "name": "R1",  "asn": 1 },
+    { "name": "R2",  "asn": 1 },
+    { "name": "R3",  "asn": 1 },
+    { "name": "R4",  "asn": 1 },
+    { "name": "R5",  "asn": 1 },
+    { "name": "R6",  "asn": 1 },
+    { "name": "R7",  "asn": 1 },
+
+    { "name": "R8",  "asn": 2 },
+    { "name": "R9",  "asn": 2 },
+    { "name": "R10", "asn": 2 },
+    { "name": "R11", "asn": 2 },
+    { "name": "R12", "asn": 2 },
+    { "name": "R13", "asn": 2 },
+    { "name": "R14", "asn": 2 }
+  ],
+
+  "links": [
+
+    {
+      "from": "R1",
+      "to": "R2",
+      "interface_from": "g1/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 10, "to": 10 }
+    },
+    {
+      "from": "R2",
+      "to": "R4",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 10, "to": 10 }
+    },
+    {
+      "from": "R4",
+      "to": "R5",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 10, "to": 10 }
+    },
+    {
+      "from": "R5",
+      "to": "R6",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 10, "to": 10 }
+    },
+    {
+      "from": "R1",
+      "to": "R3",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 50, "to": 50 }
+    },
+    {
+      "from": "R3",
+      "to": "R7",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 50, "to": 50 }
+    },
+    {
+      "from": "R8",
+      "to": "R9",
+      "interface_from": "g1/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 10, "to": 10 }
+    },
+    {
+      "from": "R9",
+      "to": "R11",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 10, "to": 10 }
+    },
+    {
+      "from": "R11",
+      "to": "R12",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 10, "to": 10 }
+    },
+    {
+      "from": "R12",
+      "to": "R13",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 10, "to": 10 }
+    },
+
+    {
+      "from": "R8",
+      "to": "R10",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 50, "to": 50 }
+    },
+    {
+      "from": "R10",
+      "to": "R14",
+      "interface_from": "g2/0",
+      "interface_to": "g1/0",
+      "ospf_cost": { "from": 50, "to": 50 }
+    },
+    {
+      "from": "R3",
+      "to": "R10",
+      "interface_from": "g3/0",
+      "interface_to": "g3/0",
+      "ospf_cost": { "from": 100, "to": 100 }
+    },
+    {
+    "from": "R6",
+    "to": "R13",
+    "interface_from": "g3/0",
+    "interface_to": "g3/0",
+    "ospf_cost": { "from": 1, "to": 1 }
+  }
+  ]
+}
