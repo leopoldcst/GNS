@@ -7,13 +7,14 @@
     "create_routers": true,
     "create_links": true,
     "arrange_automagically": true,
-    "arrange_in_circle": false,
     "auto_fetch_router_infos": true,
     "auto_create_address": {
       "physical": true,
       "Loopback": true
     }
   },
+
+  "write": true,
 
   "as": [
     { "asn": 1, "internal_protocol": "RIP" },
