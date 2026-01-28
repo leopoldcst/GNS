@@ -66,6 +66,13 @@ source ./gns_venv/bin/activate
 pip3 install -r ./requirements.txt
 ```
 
+```
+ou alors 
+python -m venv venv
+venv\Scripts\activate
+pip3 install -r ./requirements.txt
+```
+
 # Usage
 
 En l’absence de paramètres, le script choisit le fichier d'intention d'exemple : `intents/intent_2_AS_OSPF_RIP.json`.
