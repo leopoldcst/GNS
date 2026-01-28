@@ -65,6 +65,10 @@ def main(intentfile):
     as_list: dict[int, AS] = {}
     for as_data in intents["as"]:
         asn = as_data["asn"]
+        
+        if as_list.get(asn) != None:
+            log.fatal_error(f"Invalid config for AS n°{asn}", Exception(f"AS n°{asn} already exists")) 
+        
         internal_protocol = as_data["internal_protocol"].lower()
 
         as_list[asn] = AS(asn, internal_protocol)
@@ -89,6 +93,12 @@ def main(intentfile):
     for router_data in intents["routers"]:
         name: str = router_data["name"]
         asn: int = router_data["asn"]
+
+        if as_list.get(asn) == None:
+            log.fatal_error(f"Invalid config for router {name}", Exception(f"No AS n°{asn} found in intents")) 
+        
+        if routers.get(name) != None:
+            log.fatal_error(f"Invalid config for router {name}", Exception(f"Router {name} already exists")) 
         
         # Getting host and port depending on choosed method,
         # either automaticaly from GNS or with the user's intents
@@ -149,10 +159,13 @@ def main(intentfile):
 
         if gns_config.get("create_links", False):
             log.info(f"Adding link from {link["interface_from"]} on {link["from"]} to {link["interface_to"]} on {link["to"]} (GNS)")
-            g.create_link(link["from"], # Adding link inside GNS
-                        link["interface_from"],
-                        link["to"],
-                        link["interface_to"])
+            try:
+                g.create_link(link["from"], # Adding link inside GNS
+                            link["interface_from"],
+                            link["to"],
+                            link["interface_to"])
+            except Exception as exp:
+                log.fatal_error(f"Cannot create link from {link["interface_from"]} on {link["from"]} to {link["interface_to"]} on {link["to"]}, check if the interfaces are not used twice !!", exp)
             
         
         cost_from, cost_to = read_ospf_cost(link)
