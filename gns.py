@@ -1,8 +1,4 @@
-### Implémenter le démarrage du routeur
-
-
-#Ajouter : link_style: Optional[Any] = None dans la library gns3fy
-
+# Ajouter : link_style: Optional[Any] = None dans la library gns3fy
 
 from gns3fy import gns3fy, Project, Node, Link
 
@@ -105,37 +101,3 @@ class GnsProject:
 
     def get_router_port(self, router_name):
         return self.routers[router_name].console
-
-
-        
-
-
-if __name__ == "__main__":
-    g = GnsProject(name=round(datetime.datetime.now().timestamp()))
-    # g.recoverExisting()
-    
-    g.createNew()
-    g.createRouter(name="R1")
-    g.createRouter(name="R3")
-    g.createRouter(name="R2")
-    g.createLink("R1", "g1/0", "R2", "g2/0")
-    g.createLink("R2", "g1/0", "R3", "g2/0")
-
-    ## g.recoverRouter(name="R1")
-
-    # print(tn.read_all().decode('ascii'))
-
-    # g.close()
-
-    # g = GnsProject(name="Test")
-    # g.createNew()
-    # g.recoverExisting()
-    # g.recoverRouter(name="R3")
-    # port = g.getRouterPort("R3")
-
-    # routerS = RouterSocket(port=port)
-    # routerS.run("configure terminal")
-    # routerS.run("interface g1/0")
-    # routerS.run("ipv6 enable")
-    # routerS.close()
-

@@ -58,7 +58,6 @@ Il est recommandé d'utiliser un environnement virtuel python pour l'installatio
 
 ### Commandes
 
-
 ```bash
 git clone https://github.com/leopoldcst/GNS.git
 cd GNS

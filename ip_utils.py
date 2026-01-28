@@ -31,12 +31,3 @@ def compute_loopback_address(router_name: str, asn: int):
 def remove_ipv6_mask(ipv6):
     """Supprime le /64 si présent (obligatoire pour BGP neighbor)"""
     return ipv6.split("/")[0]
-
-##addresses = ipv6_link_inter_as("R1",1,"R2",2)
-##print(addresses)
-
-# R1 = data["liens"][0]["from"]
-# R2 = data["liens"][0]["to"]
-# num_as = data["routeurs"][0]["as"]
-# print(ipv6_link_intra_as(R1,R2,num_as))
-
