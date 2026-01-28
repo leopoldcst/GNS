@@ -44,8 +44,11 @@ Concrètement, la configuration du réseau est décrite de façon déléclarativ
 # Installation
 
 ### Prérequis
+
 - Python 3
 - Pip
+- GNS3
+- Image du routeur Cisco 7200 avec n interfaces PA-GE installées dans les slots
 
 ### Dépendances
 
@@ -56,13 +59,22 @@ Il est recommandé d'utiliser un environnement virtuel python pour l'installatio
 - rich
 - click
 
-### Commandes
-
+### Téléchargement
 ```bash
 git clone https://github.com/leopoldcst/GNS.git
 cd GNS
-python3 -m venv gns_venv
-source ./gns_venv/bin/activate
+```
+
+### Venv et dépendances
+```bash
+# Unix (MacOs/Linux) & Windows
+python3 -m venv venv/
+source ./venv/bin/activate
+
+# Windows
+python3 -m venv venv/ # or -> py -m venv venv\
+.\venv\Scripts\activate
+
 pip3 install -r ./requirements.txt
 ```
 
@@ -72,6 +84,17 @@ python -m venv venv
 venv\Scripts\activate
 pip3 install -r ./requirements.txt
 ```
+
+<details>
+<summary>Ou avec uv</summary>
+
+```bash
+uv init
+uv add -r requirements.txt  
+```
+
+</details>
+<br/>
 
 # Usage
 
@@ -86,6 +109,20 @@ python main.py <intent_file_path>
 # Exemple
 python main.py intents/intent_2_AS_OSPF.json
 ```
+
+<details>
+<summary>Ou avec uv</summary>
+
+```bash
+# Syntaxe
+uv run main.py <intent_file_path>
+
+# Exemple
+uv run main.py intents/intent_2_AS_OSPF.json
+```
+
+</details>
+<br/>
 
 # Fichier d'intention
 
