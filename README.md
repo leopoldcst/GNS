@@ -78,12 +78,7 @@ python3 -m venv venv/ # or -> py -m venv venv\
 pip3 install -r ./requirements.txt
 ```
 
-```
-ou alors 
-python -m venv venv
-venv\Scripts\activate
-pip3 install -r ./requirements.txt
-```
+
 
 <details>
 <summary>Ou avec uv</summary>
