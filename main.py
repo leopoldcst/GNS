@@ -82,10 +82,6 @@ def main(intentfile):
         as_list[rel["peer_1"]].relationships.append(Relationship("peer", as_list[rel["peer_2"]]))
         as_list[rel["peer_2"]].relationships.append(Relationship("peer", as_list[rel["peer_1"]]))
 
-    for a_s in as_list.values():
-        for rel in a_s.relationships:
-            pprint(f"{a_s.asn} is {rel.type} with/of {rel.other.asn}")
-
 
     ### Routers
     routers: dict[str, Router] = {}
